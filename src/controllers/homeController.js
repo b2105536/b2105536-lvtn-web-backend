@@ -7,7 +7,7 @@ const getHomepage = (req, res) => {
 
 const getABC = async (req, res) => {
     try {
-        let data = await db.User.findAll();
+        let data = await db.NguoiDung.findAll();
         res.render('sample.ejs', {
             data: JSON.stringify(data)
         });
