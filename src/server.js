@@ -8,6 +8,9 @@ const app = express();
 const port = process.env.PORT || 8888;
 const hostname = process.env.HOST_NAME;
 
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
 // Cấu hình template engine
 configViewEngine(app);
 

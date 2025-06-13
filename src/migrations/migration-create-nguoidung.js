@@ -37,10 +37,7 @@ module.exports = {
       anhDD: {
         type: Sequelize.STRING
       },
-      loaiQH: {
-        type: Sequelize.STRING
-      },
-      tuKhoaQH: {
+      quyenHan: {
         type: Sequelize.STRING
       },
       createdAt: {
