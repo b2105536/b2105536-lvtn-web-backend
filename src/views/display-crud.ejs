@@ -11,6 +11,24 @@
             border: 1px solid black;
             border-collapse: collapse;
         }
+        .btn-edit {
+            outline: none;
+            border: none;
+            background: orange;
+            height: 25px;
+            width: 60px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .btn-delete {
+            outline: none;
+            border: none;
+            background: red;
+            height: 25px;
+            width: 60px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
@@ -25,6 +43,7 @@
             <th>Địa chỉ thường trú</th>
             <th>Ảnh đại diện</th>
             <th>Quyền hạn</th>
+            <th>Hành động</th>
         </tr>
         <% for(let i=0; i < dataTable.length; i++) { %>
             <tr>
@@ -37,6 +56,10 @@
                 <td><%= dataTable[i].dcThuongTru %></td>
                 <td><%= dataTable[i].anhDD %></td>
                 <td><%= dataTable[i].quyenHan %></td>
+                <td>
+                    <a href="/edit-crud?id=<%= dataTable[i].id %>" class="btn-edit" type="button">Sửa</a>
+                    <a href="" class="btn-delete" type="button">Xóa</a>
+                </td>
             </tr>
         <% } %>
         

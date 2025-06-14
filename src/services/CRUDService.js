@@ -47,7 +47,55 @@ const layTatCaNguoiDung = () => {
     })
 }
 
+const layNguoiDungBangId = (userId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let nguoiDung = await db.NguoiDung.findOne({
+                where: { id: userId },
+                raw: true,
+            });
+
+            if (nguoiDung) {
+                resolve(nguoiDung);
+            } else {
+                resolve([]);
+            } 
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
+const capNhatTTNguoiDung = (data) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let nguoiDung = await db.NguoiDung.findOne({
+                where: { id: data.id }
+            });
+            if (nguoiDung) {
+                nguoiDung.hoTen = data.hoTen;
+                nguoiDung.email = data.email;
+                nguoiDung.soDD = data.soDD;
+                nguoiDung.gioiTinh = data.gioiTinh;
+                nguoiDung.ngaySinh = data.ngaySinh;
+                nguoiDung.dcThuongTru = data.dcThuongTru;
+
+                await nguoiDung.save();
+
+                let cacNguoiDung = await db.NguoiDung.findAll();
+                resolve(cacNguoiDung);
+            } else {
+                resolve();
+            }
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
 module.exports = {
     taoNguoiDung,
-    layTatCaNguoiDung
+    layTatCaNguoiDung,
+    layNguoiDungBangId,
+    capNhatTTNguoiDung
 }

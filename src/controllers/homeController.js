@@ -29,16 +29,32 @@ const postCRUD = async (req, res) => {
 
 const displayGetCRUD = async (req, res) => {
     let data = await CRUDService.layTatCaNguoiDung();
-    console.log('+++++++++++++++++++++++')
-    console.log(data)
-    console.log('+++++++++++++++++++++++')
-
     return res.render('display-crud.ejs', {
         dataTable: data,
     });
 }
 
+const getEditCRUD = async (req, res) => {
+    let userId = req.query.id;
+    if (userId) {
+        let userData = await CRUDService.layNguoiDungBangId(userId);
+        return res.render('edit-crud.ejs', {
+            ttNguoiDung: userData,
+        });
+    } else {
+        return res.send('Không tìm thấy người dùng.');
+    }
+}
+
+const putCRUD = async (req, res) => {
+    let data = req.body;
+    let cacNguoiDung = await CRUDService.capNhatTTNguoiDung(data);
+    return res.render('display-crud.ejs', {
+        dataTable: cacNguoiDung,
+    });
+}
+
 module.exports = {
     getHomepage, getABC, getCRUD,
-    postCRUD, displayGetCRUD,
+    postCRUD, displayGetCRUD, getEditCRUD, putCRUD
 }
