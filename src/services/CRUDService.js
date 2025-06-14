@@ -1,7 +1,6 @@
 const bcrypt = require('bcryptjs');
 const db = require('../models/index');
-
-const salt = bcrypt.genSaltSync(10);
+const { raw } = require('mysql2');
 
 const taoNguoiDung = async (data) => {
     return new Promise(async (resolve, reject) => {
@@ -29,7 +28,7 @@ const taoNguoiDung = async (data) => {
 const bamMatKhau = (matKhau) => {
     return new Promise(async (resolve, reject) => {
         try {
-            const hashPassword = bcrypt.hashSync(matKhau, salt);
+            const hashPassword = await bcrypt.hash(matKhau, 10);
             resolve(hashPassword);
         } catch (e) {
             reject(e);
@@ -37,6 +36,18 @@ const bamMatKhau = (matKhau) => {
     })
 }
 
+const layTatCaNguoiDung = () => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let cacNguoiDung = db.NguoiDung.findAll({raw: true,});
+            resolve(cacNguoiDung);
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
 module.exports = {
-    taoNguoiDung
+    taoNguoiDung,
+    layTatCaNguoiDung
 }

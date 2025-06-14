@@ -3,13 +3,13 @@ const db = require('../models/index');
 const CRUDService = require('../services/CRUDService');
 
 const getABC = (req, res) => {
-    res.send('Hello World! & nodemon')
+    return res.send('Hello World! & nodemon')
 }
 
 const getHomepage = async (req, res) => {
     try {
         let data = await db.NguoiDung.findAll();
-        res.render('sample.ejs', {
+        return res.render('sample.ejs', {
             data: JSON.stringify(data)
         });
     } catch (e) {
@@ -18,16 +18,27 @@ const getHomepage = async (req, res) => {
 }
 
 const getCRUD = (req, res) => {
-    res.render('crud.ejs')
+    return res.render('crud.ejs')
 }
 
 const postCRUD = async (req, res) => {
     const message = await CRUDService.taoNguoiDung(req.body);
     console.log(message);
-    res.send('Post CRUD from Server');
+    return res.send('Post CRUD from Server');
+}
+
+const displayGetCRUD = async (req, res) => {
+    let data = await CRUDService.layTatCaNguoiDung();
+    console.log('+++++++++++++++++++++++')
+    console.log(data)
+    console.log('+++++++++++++++++++++++')
+
+    return res.render('display-crud.ejs', {
+        dataTable: data,
+    });
 }
 
 module.exports = {
     getHomepage, getABC, getCRUD,
-    postCRUD,
+    postCRUD, displayGetCRUD,
 }

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get CRUD</title>
+    <style>
+        table,
+        th,
+        td {
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+    </style>
+</head>
+<body>
+    <table style="width:100%">
+        <tr>
+            <th>Số điện thoại</th>
+            <th>Họ và tên</th>
+            <th>Email</th>
+            <th>Số định danh cá nhân</th>
+            <th>Giới tính</th>
+            <th>Ngày sinh</th>
+            <th>Địa chỉ thường trú</th>
+            <th>Ảnh đại diện</th>
+            <th>Quyền hạn</th>
+        </tr>
+        <% for(let i=0; i < dataTable.length; i++) { %>
+            <tr>
+                <td><%= dataTable[i].soDienThoai %></td>
+                <td><%= dataTable[i].hoTen %></td>
+                <td><%= dataTable[i].email %></td>
+                <td><%= dataTable[i].soDD %></td>
+                <td><%= dataTable[i].gioiTinh %></td>
+                <td><%= dataTable[i].ngaySinh %></td>
+                <td><%= dataTable[i].dcThuongTru %></td>
+                <td><%= dataTable[i].anhDD %></td>
+                <td><%= dataTable[i].quyenHan %></td>
+            </tr>
+        <% } %>
+        
+        </table>
+</body>
+</html>
