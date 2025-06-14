@@ -93,9 +93,28 @@ const capNhatTTNguoiDung = (data) => {
     })
 }
 
+const xoaNguoiDungBangId = (userId) => {
+    return new Promise(async (resolve, reject) => {
+        try {
+            let nguoiDung = await db.NguoiDung.findOne({
+                where: { id: userId }
+            });
+
+            if (nguoiDung) {
+                await nguoiDung.destroy();
+            }
+
+            resolve();
+        } catch (e) {
+            reject(e);
+        }
+    })
+}
+
 module.exports = {
     taoNguoiDung,
     layTatCaNguoiDung,
     layNguoiDungBangId,
-    capNhatTTNguoiDung
+    capNhatTTNguoiDung,
+    xoaNguoiDungBangId
 }

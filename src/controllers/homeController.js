@@ -54,7 +54,17 @@ const putCRUD = async (req, res) => {
     });
 }
 
+const deleteCRUD = async (req, res) => {
+    let id = req.query.id;
+    if (id) {
+        await CRUDService.xoaNguoiDungBangId(id);
+        return res.send('Xóa người dùng thành công.');
+    } else {
+        return res.send('Không tìm thấy người dùng.');
+    }    
+}
+
 module.exports = {
     getHomepage, getABC, getCRUD,
-    postCRUD, displayGetCRUD, getEditCRUD, putCRUD
+    postCRUD, displayGetCRUD, getEditCRUD, putCRUD, deleteCRUD
 }

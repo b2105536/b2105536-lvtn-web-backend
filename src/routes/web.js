@@ -1,5 +1,5 @@
 const express = require('express');
-const { getHomepage, getABC, getCRUD, postCRUD, displayGetCRUD, getEditCRUD, putCRUD } = require('../controllers/homeController');
+const { getHomepage, getABC, getCRUD, postCRUD, displayGetCRUD, getEditCRUD, putCRUD, deleteCRUD } = require('../controllers/homeController');
 const router = express.Router();
 
 // router.Method('/route', handler)
@@ -11,5 +11,6 @@ router.post('/post-crud', postCRUD);
 router.get('/get-crud', displayGetCRUD);
 router.get('/edit-crud', getEditCRUD);
 router.post('/put-crud', putCRUD);
+router.get('/delete-crud', deleteCRUD);
 
 module.exports = router;
