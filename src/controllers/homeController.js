@@ -1,10 +1,6 @@
 
 const db = require('../models/index');
-const CRUDService = require('../services/CRUDService');
-
-const getABC = (req, res) => {
-    return res.send('Hello World! & nodemon')
-}
+const userService = require('../services/userService');
 
 const getHomepage = async (req, res) => {
     try {
@@ -17,28 +13,33 @@ const getHomepage = async (req, res) => {
     }
 }
 
-const getCRUD = (req, res) => {
-    return res.render('crud.ejs')
+const getAddUserPage = (req, res) => {
+    return res.render('create-user.ejs')
 }
 
-const postCRUD = async (req, res) => {
-    const message = await CRUDService.taoNguoiDung(req.body);
-    console.log(message);
-    return res.send('Post CRUD from Server');
+const handleCreateNewUser = async (req, res) => {
+    try {
+        const message = await userService.taoNguoiDung(req.body);
+        console.log(message);
+        return res.redirect('/users');
+    } catch (e) {
+        console.log(e)
+    }
+    
 }
 
-const displayGetCRUD = async (req, res) => {
-    let data = await CRUDService.layTatCaNguoiDung();
-    return res.render('display-crud.ejs', {
+const getUserPage = async (req, res) => {
+    let data = await userService.layTatCaNguoiDung();
+    return res.render('display-user.ejs', {
         dataTable: data,
     });
 }
 
-const getEditCRUD = async (req, res) => {
+const getEditUserPage = async (req, res) => {
     let userId = req.query.id;
     if (userId) {
-        let userData = await CRUDService.layNguoiDungBangId(userId);
-        return res.render('edit-crud.ejs', {
+        let userData = await userService.layNguoiDungBangId(userId);
+        return res.render('edit-user.ejs', {
             ttNguoiDung: userData,
         });
     } else {
@@ -46,25 +47,32 @@ const getEditCRUD = async (req, res) => {
     }
 }
 
-const putCRUD = async (req, res) => {
+const handleUpdateUser = async (req, res) => {
     let data = req.body;
-    let cacNguoiDung = await CRUDService.capNhatTTNguoiDung(data);
-    return res.render('display-crud.ejs', {
-        dataTable: cacNguoiDung,
-    });
+    // let cacNguoiDung = await userService.capNhatTTNguoiDung(data);
+    // return res.render('display-user.ejs', {
+    //     dataTable: cacNguoiDung,
+    // });
+    await userService.capNhatTTNguoiDung(data);
+    return res.redirect('/users');
 }
 
-const deleteCRUD = async (req, res) => {
+const handleDeleteUser = async (req, res) => {
     let id = req.query.id;
     if (id) {
-        await CRUDService.xoaNguoiDungBangId(id);
-        return res.send('Xóa người dùng thành công.');
+        await userService.xoaNguoiDungBangId(id);
+        return res.redirect('/users');
     } else {
         return res.send('Không tìm thấy người dùng.');
     }    
 }
 
 module.exports = {
-    getHomepage, getABC, getCRUD,
-    postCRUD, displayGetCRUD, getEditCRUD, putCRUD, deleteCRUD
+    getHomepage,
+    getAddUserPage,
+    handleCreateNewUser,
+    getUserPage,
+    getEditUserPage,
+    handleUpdateUser,
+    handleDeleteUser
 }

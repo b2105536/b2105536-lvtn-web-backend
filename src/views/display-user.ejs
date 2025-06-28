@@ -3,13 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Get CRUD</title>
+    <title>User Page</title>
     <style>
-        table,
-        th,
-        td {
+        table, th, td {
             border: 1px solid black;
             border-collapse: collapse;
+        }
+        a {
+            text-decoration: none;
+            &:hover {
+                color: darkblue;
+            }
+        }
+        .btn-add {
+            outline: none;
+            border: none;
+            background: aquamarine;
+            height: 25px;
+            width: 60px;
+            border-radius: 3px;
+            cursor: pointer;
         }
         .btn-edit {
             outline: none;
@@ -32,7 +45,8 @@
     </style>
 </head>
 <body>
-    <table style="width:100%">
+    <a href="/add-user" class="btn-add" type="button">Thêm người dùng</a>
+    <table style="width:100%; margin-top: 10px;">
         <tr>
             <th>Số điện thoại</th>
             <th>Họ và tên</th>
@@ -57,12 +71,29 @@
                 <td><%= dataTable[i].anhDD %></td>
                 <td><%= dataTable[i].quyenHan %></td>
                 <td>
-                    <a href="/edit-crud?id=<%= dataTable[i].id %>" class="btn-edit" type="button">Sửa</a>
-                    <a href="/delete-crud?id=<%= dataTable[i].id %>" class="btn-delete" type="button">Xóa</a>
+                    <a href="/edit-user?id=<%= dataTable[i].id %>" class="btn-edit" type="button">Sửa</a>
+                    <a href="/delete-user?id=<%= dataTable[i].id %>" class="btn-delete" type="button">Xóa</a>
                 </td>
             </tr>
         <% } %>
-        
+
+        <!-- <% dataTable.forEach(function (dataTable) { %>
+            <tr>
+                <td><%= dataTable.soDienThoai %></td>
+                <td><%= dataTable.hoTen %></td>
+                <td><%= dataTable.email %></td>
+                <td><%= dataTable.soDD %></td>
+                <td><%= dataTable.gioiTinh %></td>
+                <td><%= dataTable.ngaySinh %></td>
+                <td><%= dataTable.dcThuongTru %></td>
+                <td><%= dataTable.anhDD %></td>
+                <td><%= dataTable.quyenHan %></td>
+                <td>
+                    <a href="/edit-user?id=<%= dataTable.id %>" class="btn-edit" type="button">Sửa</a>
+                    <a href="/delete-user?id=<%= dataTable.id %>" class="btn-delete" type="button">Xóa</a>
+                </td>
+            </tr>
+            <% }) %> -->
         </table>
 </body>
 </html>

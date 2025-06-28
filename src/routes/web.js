@@ -1,16 +1,21 @@
 const express = require('express');
-const { getHomepage, getABC, getCRUD, postCRUD, displayGetCRUD, getEditCRUD, putCRUD, deleteCRUD } = require('../controllers/homeController');
+const { getHomepage,
+        getAddUserPage,
+        handleCreateNewUser,
+        getUserPage,
+        getEditUserPage,
+        handleUpdateUser,
+        handleDeleteUser } = require('../controllers/homeController');
 const router = express.Router();
 
 // router.Method('/route', handler)
 router.get('/', getHomepage);
-router.get('/abc', getABC);
-router.get('/crud', getCRUD);
+router.get('/add-user', getAddUserPage);
+router.get('/users', getUserPage);
+router.get('/edit-user', getEditUserPage);
 
-router.post('/post-crud', postCRUD);
-router.get('/get-crud', displayGetCRUD);
-router.get('/edit-crud', getEditCRUD);
-router.post('/put-crud', putCRUD);
-router.get('/delete-crud', deleteCRUD);
+router.post('/create-user', handleCreateNewUser);
+router.post('/update-user', handleUpdateUser);
+router.get('/delete-user', handleDeleteUser);
 
 module.exports = router;
