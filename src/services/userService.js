@@ -16,7 +16,7 @@ const taoNguoiDung = async (data) => {
                 ngaySinh: data.ngaySinh,
                 dcThuongTru: data.dcThuongTru,
                 anhDD: data.anhDD,
-                quyenHan: data.quyenHan
+                nhomId: data.nhomId
             });
             resolve('Create a new user successfully!');
         } catch (e) {

@@ -37,8 +37,8 @@ module.exports = {
       anhDD: {
         type: Sequelize.STRING
       },
-      quyenHan: {
-        type: Sequelize.STRING
+      nhomId: {
+        type: Sequelize.INTEGER
       },
       createdAt: {
         allowNull: false,
