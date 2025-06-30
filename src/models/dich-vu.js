@@ -11,6 +11,14 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      DichVu.hasMany(models.CTHD, {
+        foreignKey: 'dichVuId'
+      });
+      DichVu.belongsToMany(models.HoaDon, {
+        through: 'CTHD',
+        foreignKey: 'dichVuId',
+        otherKey: 'hoaDonId'
+      });
     }
   }
   DichVu.init({

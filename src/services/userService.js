@@ -39,6 +39,49 @@ const bamMatKhau = (matKhau) => {
 const layTatCaNguoiDung = () => {
     return new Promise(async (resolve, reject) => {
         try {
+            // // Lấy thông tin người dùng và nhóm người dùng mà họ thuộc về:
+            // let nguoiDungMoi = await db.NguoiDung.findOne({
+            //     where: { id: 1 },
+            //     attributes: ["id", "soDienThoai", "hoTen"],
+            //     include: { model: db.NhomND, attributes: ["tenNhom"] },
+            //     nest: true,
+            //     raw: true
+            // })
+            
+            // // Lấy tất cả các quyền:
+            // // Cách 1 (chọn):
+            // let cacQuyen = await db.Quyen.findAll({
+            //     attributes: ["url", "quyenHan"],
+            //     include: { model: db.NhomND, where: { id: 1 } },
+            //     nest: true,
+            //     raw: true
+            // })
+            // // Cách 2:
+            // let cacQuyen = await db.NhomND.findAll({
+            //     where: { id: 1 },
+            //     include: db.Quyen,
+            //     nest: true,
+            //     raw: true
+            // })
+
+            // // Lấy một hóa đơn và tất cả các chi tiết dịch vụ của nó:
+            // let hoaDonVaChiTiet = await db.HoaDon.findAll({
+            //     where: { id: 1 },
+            //     include: {
+            //         model: db.DichVu,
+            //         through: {
+            //             attributes: ['slSuDung', 'dgApDung', 'thanhTien']
+            //         },
+            //         attributes: ['tenDV', 'donViTinh']
+            //     },
+            //     nest: true,
+            //     raw: true
+            // });
+
+            // console.log('>>> Check bill: ', JSON.stringify(hoaDonVaChiTiet, null, 2));
+            // console.log('>>> Check group: ', nguoiDungMoi);
+            // console.log('>>> Check roles: ', cacQuyen);
+
             let cacNguoiDung = db.NguoiDung.findAll({raw: true,});
             resolve(cacNguoiDung);
         } catch (e) {

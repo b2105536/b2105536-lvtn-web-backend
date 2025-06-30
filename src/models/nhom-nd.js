@@ -11,6 +11,14 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      NhomND.hasMany(models.NguoiDung, {
+        foreignKey: 'nhomId'
+      });
+      NhomND.belongsToMany(models.Quyen, {
+        through: 'NhomQuyen',
+        foreignKey: 'nhomId',
+        otherKey: 'quyenId'
+      });
     }
   }
   NhomND.init({
