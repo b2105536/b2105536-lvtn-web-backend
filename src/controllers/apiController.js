@@ -1,3 +1,5 @@
+const loginRegisterService = require('../services/loginRegisterService');
+
 const testApi = (req, res) => {
     return res.status(200).json({
         message: 'ok',
@@ -5,8 +7,39 @@ const testApi = (req, res) => {
     })
 }
 
-const handleRegister = (req, res) => {
-    console.log("Hello", req.body)
+const handleRegister = async (req, res) => {
+    try {
+        if (!req.body.soDienThoai || !req.body.email || !req.body.matKhau) {
+            return res.status(200).json({
+                EM: 'Missing required parameters', // error message
+                EC: '1', // error code
+                DT: '' // data
+            })
+        }
+
+        if (req.body.matKhau && req.body.matKhau.length < 8) {
+            return res.status(200).json({
+                EM: 'Your password must have at least 8 characters', // error message
+                EC: '1', // error code
+                DT: '' // data
+            })
+        }
+
+        // Service: Create user
+        let data = await loginRegisterService.taoTaiKhoanNguoiDung(req.body);
+
+        return res.status(200).json({
+            EM: data.EM, // error message
+            EC: data.EC, // error code
+            DT: '' // data
+        })
+    } catch (e) {
+        return res.status(500).json({
+            EM: 'error from server', // error message
+            EC: '-1', // error code
+            DT: '' // data
+        })
+    }
 }
 
 module.exports = {
