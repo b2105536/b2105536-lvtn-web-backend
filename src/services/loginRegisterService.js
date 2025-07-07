@@ -1,5 +1,6 @@
 const bcrypt = require('bcryptjs');
 const db = require('../models/index');
+const { Op } = require('sequelize');
 
 const bamMatKhau = (matKhau) => {
     return new Promise(async (resolve, reject) => {
@@ -76,6 +77,49 @@ const taoTaiKhoanNguoiDung = async (rawUserData) => {
     }
 }
 
+const kiemTraMatKhau = (inputPassword, hashPassword) => {
+    return bcrypt.compareSync(inputPassword, hashPassword);
+}
+
+const dangNhapTaiKhoan = async (rawData) => {
+    try {
+        let nguoiDung = await db.NguoiDung.findOne({
+            where: {
+                [Op.or]: [
+                    { soDienThoai: rawData.valueLogin },
+                    { email: rawData.valueLogin }
+                ]
+            }
+        });
+
+        if (nguoiDung) {
+            console.log(">>> User was found")
+            let matKhauDung = kiemTraMatKhau(rawData.matKhau, nguoiDung.matKhau);
+            if (matKhauDung === true) {
+                return {
+                    EM: 'OK',
+                    EC: 0,
+                    DT: ''
+                };
+            }
+        }
+        
+        console.log(">>> User not found with email/mobile: ", rawData.valueLogin, "& password: ", rawData.matKhau);
+        return {
+            EM: 'Thông tin bạn nhập không chính xác. (The information you entered is incorrect)',
+            EC: 1,
+            DT: ''
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: -2
+        };
+    }
+}
+
 module.exports = {
-    taoTaiKhoanNguoiDung
+    taoTaiKhoanNguoiDung,
+    dangNhapTaiKhoan
 }

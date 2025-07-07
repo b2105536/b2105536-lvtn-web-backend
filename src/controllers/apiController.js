@@ -4,7 +4,7 @@ const testApi = (req, res) => {
     return res.status(200).json({
         message: 'ok',
         data: 'test api'
-    })
+    });
 }
 
 const handleRegister = async (req, res) => {
@@ -32,17 +32,36 @@ const handleRegister = async (req, res) => {
             EM: data.EM, // error message
             EC: data.EC, // error code
             DT: '' // data
-        })
+        });
     } catch (e) {
         return res.status(500).json({
             EM: 'error from server', // error message
             EC: '-1', // error code
             DT: '' // data
-        })
+        });
+    }
+}
+
+const handleLogin = async (req, res) => {
+    try {
+        let data = await loginRegisterService.dangNhapTaiKhoan(req.body);
+
+        return res.status(200).json({
+            EM: data.EM, // error message
+            EC: data.EC, // error code
+            DT: data.DT // data (trả về data nên service cũng trả về data)
+        });
+    } catch (e) {
+        return res.status(500).json({
+            EM: 'error from server', // error message
+            EC: '-1', // error code
+            DT: '' // data
+        });
     }
 }
 
 module.exports = {
     testApi,
-    handleRegister
+    handleRegister,
+    handleLogin
 }
