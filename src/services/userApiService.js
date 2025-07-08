@@ -30,6 +30,35 @@ const layTatCaNguoiDung = async () => {
     }
 }
 
+const layNguoiDungTheoTrang = async (page, limit) => {
+    try {
+        let offset = (page - 1) * limit;
+        const { count, rows } = await db.NguoiDung.findAndCountAll({
+            offset: offset,
+            limit: limit
+        });
+        let totalPages = Math.ceil(count / limit);
+        let data = {
+            totalRows: count,
+            totalPages: totalPages,
+            users: rows
+        };
+
+        return {
+            EM: 'Ok! (Fetch ok)',
+            EC: 0,
+            DT: data
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
 const taoNguoiDung = async (data) => {
     try {
         await db.NguoiDung.create({
@@ -77,6 +106,7 @@ const xoaNguoiDungBangId = async (userId) => {
 
 module.exports = {
     layTatCaNguoiDung,
+    layNguoiDungTheoTrang,
     taoNguoiDung,
     layNguoiDungBangId,
     capNhatTTNguoiDung,

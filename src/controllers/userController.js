@@ -2,12 +2,24 @@ const userApiService = require('../services/userApiService');
 
 const readFunc = async (req, res) => {
     try {
-        let data = await userApiService.layTatCaNguoiDung();
-        return res.status(200).json({
-            EM: data.EM, // error message
-            EC: data.EC, // error code
-            DT: data.DT // data (trả về data nên service cũng trả về data)
-        });
+        if (req.query.page && req.query.limit) {
+            let page = req.query.page;
+            let limit = req.query.limit;
+
+            let data = await userApiService.layNguoiDungTheoTrang(+page, +limit);
+            return res.status(200).json({
+                EM: data.EM, // error message
+                EC: data.EC, // error code
+                DT: data.DT // data (trả về data nên service cũng trả về data)
+            });
+        } else {
+            let data = await userApiService.layTatCaNguoiDung();
+            return res.status(200).json({
+                EM: data.EM, // error message
+                EC: data.EC, // error code
+                DT: data.DT // data (trả về data nên service cũng trả về data)
+            });
+        }
     } catch (e) {
         console.log(e);
         return res.status(500).json({
