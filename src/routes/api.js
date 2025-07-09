@@ -6,6 +6,7 @@ const { readFunc,
         createFunc,
         updateFunc,
         deleteFunc } = require('../controllers/userController');
+const { readFunc: groupReadFunc } = require('../controllers/groupController');
 const router = express.Router();
 
 // Restful API('/route', api)
@@ -17,5 +18,7 @@ router.get('/user/read', readFunc);
 router.post('/user/create', createFunc);
 router.put('/user/update', updateFunc);
 router.delete('/user/delete', deleteFunc);
+
+router.get('/group/read', groupReadFunc);
 
 module.exports = router;

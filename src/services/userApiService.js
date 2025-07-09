@@ -63,11 +63,19 @@ const layNguoiDungTheoTrang = async (page, limit) => {
 
 const taoNguoiDung = async (data) => {
     try {
-        await db.NguoiDung.create({
-            
-        });
+        await db.NguoiDung.create(data);
+        return {
+            EM: 'Tạo người dùng thành công! (User created successfully)',
+            EC: 0,
+            DT: []
+        };
     } catch (e) {
         console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: []
+        };
     }
 }
 

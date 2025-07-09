@@ -30,9 +30,16 @@ const readFunc = async (req, res) => {
     }
 }
 
-const createFunc = (req, res) => {
+const createFunc = async (req, res) => {
     try {
-        
+        // Validate => bổ sung thêm tại đây
+
+        let data = await userApiService.taoNguoiDung(req.body);
+        return res.status(200).json({
+            EM: data.EM, // error message
+            EC: data.EC, // error code
+            DT: data.DT // data (trả về data nên service cũng trả về data)
+        });
     } catch (e) {
         console.log(e);
         return res.status(500).json({
