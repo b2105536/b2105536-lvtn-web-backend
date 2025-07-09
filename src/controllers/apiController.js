@@ -9,12 +9,31 @@ const testApi = (req, res) => {
 
 const handleRegister = async (req, res) => {
     try {
+        const regxMobile = /(0[3|5|7|8|9])+([0-9]{8})\b/g;
+        const regxEmail = /\S+@\S+\.\S+/;
+
         if (!req.body.soDienThoai || !req.body.email || !req.body.matKhau) {
             return res.status(200).json({
                 EM: 'Missing required parameters', // error message
                 EC: '1', // error code
                 DT: '' // data
             })
+        }
+
+        if (!regxMobile.test(req.body.soDienThoai)) {
+            return res.status(200).json({
+                EM: 'Mobile is invalid',
+                EC: '1',
+                DT: ''
+            });
+        }
+
+        if (!regxEmail.test(req.body.email)) {
+            return res.status(200).json({
+                EM: 'Email is invalid',
+                EC: '1',
+                DT: ''
+            });
         }
 
         if (req.body.matKhau && req.body.matKhau.length < 8) {

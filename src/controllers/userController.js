@@ -32,7 +32,41 @@ const readFunc = async (req, res) => {
 
 const createFunc = async (req, res) => {
     try {
-        // Validate => bổ sung thêm tại đây
+        const { soDienThoai, email, nhomId, matKhau } = req.body;
+        const regxMobile = /(0[3|5|7|8|9])+([0-9]{8})\b/g;
+        const regxEmail = /\S+@\S+\.\S+/;
+
+        if (!soDienThoai || !email || !nhomId || !matKhau) {
+            return res.status(200).json({
+                EM: 'Missing required parameters', // error message
+                EC: '1', // error code
+                DT: '' // data
+            })
+        }
+
+        if (!regxMobile.test(soDienThoai)) {
+            return res.status(200).json({
+                EM: 'Mobile is invalid',
+                EC: '1',
+                DT: ''
+            });
+        }
+
+        if (!regxEmail.test(email)) {
+            return res.status(200).json({
+                EM: 'Email is invalid',
+                EC: '1',
+                DT: ''
+            });
+        }
+
+        if (matKhau && matKhau.length < 8) {
+            return res.status(200).json({
+                EM: 'Your password must have at least 8 characters', // error message
+                EC: '1', // error code
+                DT: '' // data
+            })
+        }
 
         let data = await userApiService.taoNguoiDung(req.body);
         return res.status(200).json({

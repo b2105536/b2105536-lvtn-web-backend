@@ -1,4 +1,5 @@
 const db = require('../models/index');
+const loginRegisterService = require('./loginRegisterService');
 
 const layTatCaNguoiDung = async () => {
     try {
@@ -63,6 +64,15 @@ const layNguoiDungTheoTrang = async (page, limit) => {
 
 const taoNguoiDung = async (data) => {
     try {
+        let tonTaiSoDienThoai = await loginRegisterService.sdtTonTaiKhong(data.soDienThoai);
+        if (tonTaiSoDienThoai === true) {
+            return {
+                EM: 'Số điện thoại này đã tồn tại. (This mobile has already existed)',
+                EC: 1,
+                DT: []
+            };
+        }
+        
         await db.NguoiDung.create(data);
         return {
             EM: 'Tạo người dùng thành công! (User created successfully)',
@@ -76,14 +86,6 @@ const taoNguoiDung = async (data) => {
             EC: 1,
             DT: []
         };
-    }
-}
-
-const layNguoiDungBangId = (userId) => {
-    try {
-        
-    } catch (e) {
-        console.log(e);
     }
 }
 
@@ -139,7 +141,6 @@ module.exports = {
     layTatCaNguoiDung,
     layNguoiDungTheoTrang,
     taoNguoiDung,
-    layNguoiDungBangId,
     capNhatTTNguoiDung,
     xoaNguoiDungBangId
 }
