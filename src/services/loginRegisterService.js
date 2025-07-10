@@ -122,5 +122,7 @@ const dangNhapTaiKhoan = async (rawData) => {
 module.exports = {
     taoTaiKhoanNguoiDung,
     dangNhapTaiKhoan,
-    sdtTonTaiKhong
+    sdtTonTaiKhong,
+    emailTonTaiKhong,
+    bamMatKhau
 }

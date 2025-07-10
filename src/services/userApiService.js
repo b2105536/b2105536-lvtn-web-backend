@@ -1,5 +1,5 @@
 const db = require('../models/index');
-const loginRegisterService = require('./loginRegisterService');
+const { sdtTonTaiKhong, emailTonTaiKhong, bamMatKhau } = require('./loginRegisterService');
 
 const layTatCaNguoiDung = async () => {
     try {
@@ -38,7 +38,8 @@ const layNguoiDungTheoTrang = async (page, limit) => {
             offset: offset,
             limit: limit,
             attributes: ["id", "soDienThoai", "hoTen", "email", "soDD", "gioiTinh", "ngaySinh", "dcThuongTru"],
-            include: { model: db.NhomND, attributes: ["tenNhom"] }
+            include: { model: db.NhomND, attributes: ["id", "tenNhom"] },
+            order: [['id', 'DESC']]
         });
         let totalPages = Math.ceil(count / limit);
         let data = {
@@ -64,16 +65,27 @@ const layNguoiDungTheoTrang = async (page, limit) => {
 
 const taoNguoiDung = async (data) => {
     try {
-        let tonTaiSoDienThoai = await loginRegisterService.sdtTonTaiKhong(data.soDienThoai);
+        let tonTaiSoDienThoai = await sdtTonTaiKhong(data.soDienThoai);
         if (tonTaiSoDienThoai === true) {
             return {
                 EM: 'Số điện thoại này đã tồn tại. (This mobile has already existed)',
                 EC: 1,
-                DT: []
+                DT: 'soDienThoai'
             };
         }
         
-        await db.NguoiDung.create(data);
+        let tonTaiEmail = await emailTonTaiKhong(data.email);
+        if (tonTaiEmail === true) {
+            return {
+                EM: 'Email này đã tồn tại. (This email has already existed)',
+                EC: 1,
+                DT: 'email'
+            };
+        }
+
+        let hashPassword = await bamMatKhau(data.matKhau);
+
+        await db.NguoiDung.create({...data, matKhau: hashPassword});
         return {
             EM: 'Tạo người dùng thành công! (User created successfully)',
             EC: 0,
