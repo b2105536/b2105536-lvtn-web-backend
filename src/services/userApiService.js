@@ -103,18 +103,46 @@ const taoNguoiDung = async (data) => {
 
 const capNhatTTNguoiDung = async (data) => {
     try {
+        if (!data.nhomId) {
+            return {
+                EM: 'Lỗi! (Empty GroupId)',
+                EC: 1,
+                DT: 'nhomId'
+            };
+        }
+
         let nguoiDung = await db.NguoiDung.findOne({
             where: {id: data.id}
         });
         if (nguoiDung) {
-            nguoiDung.save({
-
+            await nguoiDung.update({
+                hoTen: data.hoTen,
+                soDD: data.soDD,
+                gioiTinh: data.gioiTinh,
+                ngaySinh: data.ngaySinh,
+                dcThuongTru: data.dcThuongTru,
+                anhDD: data.anhDD,
+                nhomId: data.nhomId
             });
+            return {
+                EM: 'Cập nhật người dùng thành công! (User updated successfully)',
+                EC: 0,
+                DT: ''
+            };
         } else {
-
+            return {
+                EM: 'Không tìm thấy người dùng. (User not found)',
+                EC: 2,
+                DT: ''
+            };
         }
     } catch (e) {
         console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: []
+        };
     }
 }
 
