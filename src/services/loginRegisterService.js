@@ -103,8 +103,7 @@ const dangNhapTaiKhoan = async (rawData) => {
                 let payload = {
                     email: nguoiDung.email,
                     hoTen: nguoiDung.hoTen,
-                    quyenCuaNhom,
-                    expiresIn: process.env.JWT_EXPIRES_IN // miliseconds
+                    quyenCuaNhom
                 };
                 let token = createJWT(payload);
 
