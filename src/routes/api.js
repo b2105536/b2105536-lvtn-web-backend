@@ -9,10 +9,10 @@ const { checkUserJWT, checkUserPermission } = require('../middleware/JWTAction')
 const router = express.Router();
 
 // Restful API('/route', api)
+router.all('*', checkUserJWT, checkUserPermission);
 router.post('/register', handleRegister);
 router.post('/login', handleLogin);
-
-router.get('/user/read', checkUserJWT, checkUserPermission, readFunc);
+router.get('/user/read', readFunc);
 router.post('/user/create', createFunc);
 router.put('/user/update', updateFunc);
 router.delete('/user/delete', deleteFunc);
