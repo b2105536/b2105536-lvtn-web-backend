@@ -112,7 +112,9 @@ const dangNhapTaiKhoan = async (rawData) => {
                     EC: 0,
                     DT: {
                         access_token: token,
-                        quyenCuaNhom
+                        quyenCuaNhom,
+                        email: nguoiDung.email,
+                        hoTen: nguoiDung.hoTen
                     }
                 };
             }
