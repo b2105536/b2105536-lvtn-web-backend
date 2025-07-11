@@ -64,6 +64,8 @@ const handleRegister = async (req, res) => {
 const handleLogin = async (req, res) => {
     try {
         let data = await loginRegisterService.dangNhapTaiKhoan(req.body);
+        // Set cookie
+        res.cookie("jwt", data.DT.access_token, { httpOnly: true, maxAge: 60 * 60 * 1000 });
 
         return res.status(200).json({
             EM: data.EM, // error message

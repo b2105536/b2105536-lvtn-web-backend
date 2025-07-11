@@ -5,6 +5,7 @@ const webRoutes = require('./routes/web');
 const apiRoutes = require('./routes/api');
 const configCors = require('./config/cors');
 const connectDB = require('./config/connectDB');
+const cookieParser = require('cookie-parser');
 
 const app = express();
 const port = process.env.PORT || 8888;
@@ -19,12 +20,19 @@ app.use(express.json());
 // Cấu hình template engine
 configViewEngine(app);
 
+// Cấu hình cookie-parser
+app.use(cookieParser());
+
 // Khai báo route
 app.use('/', webRoutes); //Tất cả những route khai báo sẽ nằm sau đường dẫn này
 app.use('/api/v1/', apiRoutes);
 
 // Kết nối CSDL
 connectDB();
+
+app.use((req, res) => {
+  return res.send('404 Not Found');
+})
 
 app.listen(port, hostname, () => {
   console.log(`Example app listening on port ${port}`)

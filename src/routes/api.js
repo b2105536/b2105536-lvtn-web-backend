@@ -9,6 +9,11 @@ const { readFunc,
 const { readFunc: groupReadFunc } = require('../controllers/groupController');
 const router = express.Router();
 
+const testMiddleware = (req, res, next) => {
+    console.log("Calling a middleware!");
+    next();
+}
+
 // Restful API('/route', api)
 router.get('/test-api', testApi);
 router.post('/register', handleRegister);
