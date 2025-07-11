@@ -102,6 +102,7 @@ const dangNhapTaiKhoan = async (rawData) => {
                 let quyenCuaNhom = await layNhomVoiQuyen(nguoiDung);
                 let payload = {
                     email: nguoiDung.email,
+                    hoTen: nguoiDung.hoTen,
                     quyenCuaNhom,
                     expiresIn: process.env.JWT_EXPIRES_IN // miliseconds
                 };

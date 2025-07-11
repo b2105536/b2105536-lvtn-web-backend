@@ -120,9 +120,23 @@ const deleteFunc = async (req, res) => {
     }
 }
 
+const getUserAccount = async (req, res) => {
+    return res.status(200).json({
+        EM: 'OK', // error message
+        EC: 0, // error code
+        DT: {
+            access_token: req.token,
+            quyenCuaNhom: req.user.quyenCuaNhom,
+            email: req.user.email,
+            hoTen: req.user.hoTen
+        } // data (trả về data nên service cũng trả về data)
+    });
+}
+
 module.exports = {
     readFunc,
     createFunc,
     updateFunc,
-    deleteFunc
+    deleteFunc,
+    getUserAccount
 }
