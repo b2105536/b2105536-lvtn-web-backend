@@ -1,6 +1,9 @@
+require('dotenv').config();
 const bcrypt = require('bcryptjs');
 const db = require('../models/index');
 const { Op } = require('sequelize');
+const { layNhomVoiQuyen } = require('./JWTService');
+const { createJWT } = require('../middleware/JWTAction');
 
 const bamMatKhau = (matKhau) => {
     return new Promise(async (resolve, reject) => {
@@ -61,7 +64,8 @@ const taoTaiKhoanNguoiDung = async (rawUserData) => {
             soDienThoai: rawUserData.soDienThoai,
             hoTen: rawUserData.hoTen,
             email: rawUserData.email,
-            matKhau: hashPassword
+            matKhau: hashPassword,
+            nhomId: 4
         });
 
         return {
@@ -93,18 +97,27 @@ const dangNhapTaiKhoan = async (rawData) => {
         });
 
         if (nguoiDung) {
-            console.log(">>> User was found")
             let matKhauDung = kiemTraMatKhau(rawData.matKhau, nguoiDung.matKhau);
             if (matKhauDung === true) {
+                let quyenCuaNhom = await layNhomVoiQuyen(nguoiDung);
+                let payload = {
+                    email: nguoiDung.email,
+                    quyenCuaNhom,
+                    expiresIn: process.env.JWT_EXPIRES_IN // miliseconds
+                };
+                let token = createJWT(payload);
+
                 return {
                     EM: 'OK',
                     EC: 0,
-                    DT: ''
+                    DT: {
+                        access_token: token,
+                        quyenCuaNhom
+                    }
                 };
             }
         }
         
-        console.log(">>> User not found with email/mobile: ", rawData.valueLogin, "& password: ", rawData.matKhau);
         return {
             EM: 'Thông tin bạn nhập không chính xác. (The information you entered is incorrect)',
             EC: 1,
