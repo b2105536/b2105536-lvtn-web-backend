@@ -1,5 +1,5 @@
 const express = require('express');
-const { handleRegister, handleLogin } = require('../controllers/apiController');
+const { handleRegister, handleLogin, handleLogout } = require('../controllers/apiController');
 const { readFunc,
         createFunc,
         updateFunc,
@@ -13,6 +13,7 @@ const router = express.Router();
 router.all('*', checkUserJWT, checkUserPermission);
 router.post('/register', handleRegister);
 router.post('/login', handleLogin);
+router.post('/logout', handleLogout);
 router.get('/account', getUserAccount);
 
 router.get('/user/read', readFunc);
