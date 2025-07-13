@@ -120,9 +120,42 @@ const xoaQuyenBangId = async (id) => {
     }
 }
 
+const capNhatQuyen = async (data) => {
+    try {
+        let quyen = await db.Quyen.findOne({
+            where: {id: data.id}
+        });
+        if (quyen) {
+            await quyen.update({
+                url: data.url,
+                quyenHan: data.quyenHan,
+            });
+            return {
+                EM: 'Cập nhật quyền hạn thành công! (Role updated successfully)',
+                EC: 0,
+                DT: ''
+            };
+        } else {
+            return {
+                EM: 'Không tìm thấy quyền hạn. (Role not found)',
+                EC: 2,
+                DT: ''
+            };
+        }
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
 module.exports = {
     taoQuyenHan,
     layTatCaQuyen,
     layQuyenTheoTrang,
-    xoaQuyenBangId
+    xoaQuyenBangId,
+    capNhatQuyen
 }
