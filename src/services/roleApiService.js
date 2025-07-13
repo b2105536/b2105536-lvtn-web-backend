@@ -152,10 +152,48 @@ const capNhatQuyen = async (data) => {
     }
 }
 
+const layQuyenTheoNhomND = async (id) => {
+    try {
+        if (!id) {
+            return {
+                EM: 'Không tìm thấy quyền nào. (Not found any roles)',
+                EC: 0,
+                DT: []
+            };
+        }
+
+        let cacQuyen = await db.NhomND.findOne({
+            where: { id: id },
+            attributes: ["id", "tenNhom"],
+            include: [
+                {
+                    model: db.Quyen,
+                    attributes: ["id", "url", "quyenHan"],
+                    through: { attributes: [] } // Disable attributes from the join table
+                }
+            ]        
+        })
+
+        return {
+            EM: 'Lấy quyền theo nhóm thành công! (Get role(s) by group successfully)',
+            EC: 0,
+            DT: cacQuyen
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
 module.exports = {
     taoQuyenHan,
     layTatCaQuyen,
     layQuyenTheoTrang,
     xoaQuyenBangId,
-    capNhatQuyen
+    capNhatQuyen,
+    layQuyenTheoNhomND
 }

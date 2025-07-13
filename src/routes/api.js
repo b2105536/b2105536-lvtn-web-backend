@@ -4,7 +4,8 @@ const { readFunc, createFunc, updateFunc, deleteFunc, getUserAccount } = require
 const { readFunc: roleReadFunc,
         createFunc: roleCreateFunc,
         updateFunc: roleUpdateFunc,
-        deleteFunc: roleDeleteFunc } = require('../controllers/roleController');
+        deleteFunc: roleDeleteFunc,
+        getRoleByGroup } = require('../controllers/roleController');
 const { readFunc: groupReadFunc } = require('../controllers/groupController');
 const { checkUserJWT, checkUserPermission } = require('../middleware/JWTAction');
 const router = express.Router();
@@ -27,6 +28,7 @@ router.get('/role/read', roleReadFunc);
 router.post('/role/create', roleCreateFunc);
 router.put('/role/update', roleUpdateFunc);
 router.delete('/role/delete', roleDeleteFunc);
+router.get('/role/by-group/:nhomId', getRoleByGroup);
 
 // Group routes
 router.get('/group/read', groupReadFunc);
