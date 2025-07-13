@@ -34,6 +34,95 @@ const taoQuyenHan = async (roles) => {
     }
 }
 
+const layTatCaQuyen = async () => {
+    try {
+        let data = await db.Quyen.findAll(
+        // {
+        //     attributes: ["id", "url", "quyenHan"],
+        //     include: { model: db.NhomND, attributes: ["tenNhom"], through: { attributes: [] }}
+        // }
+        );
+        // if (cacNguoiDung) {
+            return {
+                EM: 'Lấy dữ liệu thành công! (Get data successfully)',
+                EC: 0,
+                DT: data
+            };
+        // } else {
+        //     return {
+        //         EM: 'Lấy dữ liệu thành công! (Get data successfully)',
+        //         EC: 0,
+        //         DT: []
+        //     };
+        // }
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
+const layQuyenTheoTrang = async (page, limit) => {
+    try {
+        let offset = (page - 1) * limit;
+        const { count, rows } = await db.Quyen.findAndCountAll({
+            offset: offset,
+            limit: limit,
+            attributes: ["id", "url", "quyenHan"],
+            // include: { model: db.NhomND, attributes: ["id", "tenNhom"] },
+            order: [['id', 'DESC']]
+        });
+        let totalPages = Math.ceil(count / limit);
+        let data = {
+            totalRows: count,
+            totalPages: totalPages,
+            roles: rows
+        };
+        return {
+            EM: 'Ok! (Fetch ok)',
+            EC: 0,
+            DT: data
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
+const xoaQuyenBangId = async (id) => {
+    try {
+        let quyen = await db.Quyen.findOne({
+            where: {id: id}
+        });
+        if (quyen) {
+            await quyen.destroy();
+        }
+        
+        return {
+            EM: 'Xóa quyền thành công! (Role deleted successfully)',
+            EC: 0,
+            DT: []
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
 module.exports = {
-    taoQuyenHan
+    taoQuyenHan,
+    layTatCaQuyen,
+    layQuyenTheoTrang,
+    xoaQuyenBangId
 }
