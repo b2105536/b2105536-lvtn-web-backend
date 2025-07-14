@@ -36,25 +36,15 @@ const taoQuyenHan = async (roles) => {
 
 const layTatCaQuyen = async () => {
     try {
-        let data = await db.Quyen.findAll(
-        // {
-        //     attributes: ["id", "url", "quyenHan"],
-        //     include: { model: db.NhomND, attributes: ["tenNhom"], through: { attributes: [] }}
-        // }
-        );
-        // if (cacNguoiDung) {
-            return {
-                EM: 'Lấy dữ liệu thành công! (Get data successfully)',
-                EC: 0,
-                DT: data
-            };
-        // } else {
-        //     return {
-        //         EM: 'Lấy dữ liệu thành công! (Get data successfully)',
-        //         EC: 0,
-        //         DT: []
-        //     };
-        // }
+        let data = await db.Quyen.findAll({
+            attributes: ["id", "url", "quyenHan"],
+            order: [['id', 'DESC']]
+        });
+        return {
+            EM: 'Lấy dữ liệu thành công! (Get data successfully)',
+            EC: 0,
+            DT: data
+        };
     } catch (e) {
         console.log(e);
         return {
@@ -72,7 +62,6 @@ const layQuyenTheoTrang = async (page, limit) => {
             offset: offset,
             limit: limit,
             attributes: ["id", "url", "quyenHan"],
-            // include: { model: db.NhomND, attributes: ["id", "tenNhom"] },
             order: [['id', 'DESC']]
         });
         let totalPages = Math.ceil(count / limit);
@@ -104,7 +93,6 @@ const xoaQuyenBangId = async (id) => {
         if (quyen) {
             await quyen.destroy();
         }
-        
         return {
             EM: 'Xóa quyền thành công! (Role deleted successfully)',
             EC: 0,
@@ -189,11 +177,33 @@ const layQuyenTheoNhomND = async (id) => {
     }
 }
 
+const phanQuyenChoNhomND = async (data) => {
+    try {
+        await db.NhomQuyen.destroy({
+            where: { nhomId: +data.nhomId }
+        })
+        await db.NhomQuyen.bulkCreate(data.groupRoles);
+        return {
+            EM: 'Phân quyền cho nhóm thành công! (Assign role(s) to group successfully)',
+            EC: 0,
+            DT: []
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
 module.exports = {
     taoQuyenHan,
     layTatCaQuyen,
     layQuyenTheoTrang,
     xoaQuyenBangId,
     capNhatQuyen,
-    layQuyenTheoNhomND
+    layQuyenTheoNhomND,
+    phanQuyenChoNhomND
 }
