@@ -11,11 +11,13 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      Huyen.hasMany(models.Xa, {
+        foreignKey: 'huyenId'
+      });
     }
   }
   Huyen.init({
     tenHuyen: DataTypes.STRING,
-    tinhId: DataTypes.INTEGER,
     ttDVHCId: DataTypes.STRING
   }, {
     sequelize,
