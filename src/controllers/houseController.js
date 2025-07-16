@@ -1,4 +1,6 @@
-const roleApiService = require('../services/roleApiService');
+const userApiService = require('../services/userApiService');
+const houseApiService = require('../services/houseApiService');
+
 
 const readFunc = async (req, res) => {
     try {
@@ -6,14 +8,14 @@ const readFunc = async (req, res) => {
             let page = req.query.page;
             let limit = req.query.limit;
 
-            let data = await roleApiService.layQuyenTheoTrang(+page, +limit);
+            let data = await houseApiService.layNhaTheoTrang(+page, +limit);
             return res.status(200).json({
                 EM: data.EM, // error message
                 EC: data.EC, // error code
                 DT: data.DT // data (trả về data nên service cũng trả về data)
             });
         } else {
-            let data = await roleApiService.layTatCaQuyen();
+            let data = await houseApiService.layTatCaNha();
             return res.status(200).json({
                 EM: data.EM, // error message
                 EC: data.EC, // error code
@@ -32,7 +34,16 @@ const readFunc = async (req, res) => {
 
 const createFunc = async (req, res) => {
     try {
-        let data = await roleApiService.taoQuyenHan(req.body);
+        const { ten, diaChi, chuTroId, tinhId, huyenId, xaId } = req.body;
+        if (!ten || !diaChi || !chuTroId || !tinhId || !huyenId || !xaId) {
+            return res.status(200).json({
+                EM: 'Missing required parameters', // error message
+                EC: '1', // error code
+                DT: '' // data
+            })
+        }
+
+        let data = await houseApiService.taoNha(req.body);
         return res.status(200).json({
             EM: data.EM, // error message
             EC: data.EC, // error code
@@ -50,7 +61,7 @@ const createFunc = async (req, res) => {
 
 const updateFunc = async (req, res) => {
     try {
-        let data = await roleApiService.capNhatQuyen(req.body);
+        let data = await houseApiService.capNhatTTNha(req.body);
         return res.status(200).json({
             EM: data.EM, // error message
             EC: data.EC, // error code
@@ -68,7 +79,7 @@ const updateFunc = async (req, res) => {
 
 const deleteFunc = async (req, res) => {
     try {
-        let data = await roleApiService.xoaQuyenBangId(req.body.id);
+        let data = await houseApiService.xoaNhaBangId(req.body.id);
         return res.status(200).json({
             EM: data.EM, // error message
             EC: data.EC, // error code
@@ -84,10 +95,9 @@ const deleteFunc = async (req, res) => {
     }
 }
 
-const getRoleByGroup = async (req, res) => {
+const getUserByGroup = async (req, res) => {
     try {
-        let id = req.params.nhomId;
-        let data = await roleApiService.layQuyenTheoNhomND(id);
+        let data = await houseApiService.layNguoiDungChuTro();
         return res.status(200).json({
             EM: data.EM, // error message
             EC: data.EC, // error code
@@ -103,9 +113,47 @@ const getRoleByGroup = async (req, res) => {
     }
 }
 
-const assignRoleToGroup = async (req, res) => {
+const getProvince = async (req, res) => {
     try {
-        let data = await roleApiService.phanQuyenChoNhomND(req.body.data);
+        let data = await houseApiService.layTinh();
+        return res.status(200).json({
+            EM: data.EM, // error message
+            EC: data.EC, // error code
+            DT: data.DT // data (trả về data nên service cũng trả về data)
+        });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            EM: 'error from server', // error message
+            EC: '-1', // error code
+            DT: '' // data
+        });
+    }
+}
+
+const getDistrictByProvince = async (req, res) => {
+    try {
+        let id = req.params.tinhId;
+        let data = await houseApiService.layHuyenTheoTinh(id);
+        return res.status(200).json({
+            EM: data.EM, // error message
+            EC: data.EC, // error code
+            DT: data.DT // data (trả về data nên service cũng trả về data)
+        });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            EM: 'error from server', // error message
+            EC: '-1', // error code
+            DT: '' // data
+        });
+    }
+}
+
+const getWardByDistrict = async (req, res) => {
+    try {
+        let id = req.params.huyenId;
+        let data = await houseApiService.layXaTheoHuyen(id);
         return res.status(200).json({
             EM: data.EM, // error message
             EC: data.EC, // error code
@@ -126,6 +174,8 @@ module.exports = {
     createFunc,
     updateFunc,
     deleteFunc,
-    getRoleByGroup,
-    assignRoleToGroup
+    getUserByGroup,
+    getProvince,
+    getDistrictByProvince,
+    getWardByDistrict
 }

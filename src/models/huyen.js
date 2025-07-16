@@ -11,6 +11,9 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      Huyen.belongsTo(models.Tinh, {
+        foreignKey: 'tinhId'
+      });
       Huyen.hasMany(models.Xa, {
         foreignKey: 'huyenId'
       });
@@ -18,6 +21,7 @@ module.exports = (sequelize, DataTypes) => {
   }
   Huyen.init({
     tenHuyen: DataTypes.STRING,
+    tinhId: DataTypes.INTEGER,
     ttDVHCId: DataTypes.STRING
   }, {
     sequelize,

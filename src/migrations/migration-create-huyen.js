@@ -12,6 +12,9 @@ module.exports = {
       tenHuyen: {
         type: Sequelize.STRING
       },
+      tinhId: {
+        type: Sequelize.INTEGER
+      },
       ttDVHCId: {
         type: Sequelize.STRING
       },

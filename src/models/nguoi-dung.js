@@ -14,6 +14,9 @@ module.exports = (sequelize, DataTypes) => {
       NguoiDung.belongsTo(models.NhomND, {
         foreignKey: 'nhomId'
       });
+      NguoiDung.hasMany(models.Nha, {
+        foreignKey: 'chuTroId'
+      });
     }
   }
   NguoiDung.init({
