@@ -20,6 +20,9 @@ module.exports = (sequelize, DataTypes) => {
       Nha.hasMany(models.AnhNha, {
         foreignKey: 'nhaId'
       });
+      Nha.hasMany(models.Phong, {
+        foreignKey: 'nhaId'
+      });
     }
   }
   Nha.init({

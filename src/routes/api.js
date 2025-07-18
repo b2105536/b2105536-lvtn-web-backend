@@ -8,6 +8,12 @@ const { readFunc: houseReadFunc,
         deleteFunc: houseDeleteFunc,
         getUserByGroup,
         getProvince, getDistrictByProvince, getWardByDistrict } = require('../controllers/houseController');
+const { getAllCode,
+        readFunc: roomReadFunc,
+        createFunc: roomCreateFunc,
+        updateFunc: roomUpdateFunc,
+        deleteFunc: roomDeleteFunc, 
+        houseReadFunction} = require('../controllers/roomController');
 const { readFunc: roleReadFunc,
         createFunc: roleCreateFunc,
         updateFunc: roleUpdateFunc,
@@ -46,6 +52,14 @@ router.get('/house/user-by-group', getUserByGroup);
 router.get('/house/province', getProvince);
 router.get('/house/district/by-province/:tinhId', getDistrictByProvince);
 router.get('/house/ward/by-district/:huyenId', getWardByDistrict);
+
+// Room routes
+router.get('/allcode', getAllCode);
+router.get('/room/read', roomReadFunc);
+router.post('/room/create', roomCreateFunc);
+router.put('/room/update', roomUpdateFunc);
+router.delete('/room/delete', roomDeleteFunc);
+router.get('/room/house-read', houseReadFunction);
 
 // Role routes
 router.get('/role/read', roleReadFunc);

@@ -11,6 +11,30 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+      BangMa.hasMany(models.DatLich, {
+        foreignKey: 'ttDatLichId'
+      });
+      BangMa.hasMany(models.Phong, {
+        foreignKey: 'ttPhongId'
+      });
+      BangMa.hasMany(models.HopDong, {
+        foreignKey: 'ttHopDongId'
+      });
+      BangMa.hasMany(models.Tinh, {
+        foreignKey: 'ttDVHCId'
+      });
+      BangMa.hasMany(models.Huyen, {
+        foreignKey: 'ttDVHCId'
+      });
+      BangMa.hasMany(models.Xa, {
+        foreignKey: 'ttDVHCId'
+      });
+      BangMa.hasMany(models.LichHen, {
+        foreignKey: 'loaiTG'
+      });
+      BangMa.hasMany(models.DatLich, {
+        foreignKey: 'loaiTG'
+      });
     }
   }
   BangMa.init({
