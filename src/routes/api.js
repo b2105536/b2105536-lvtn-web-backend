@@ -1,5 +1,6 @@
 const express = require('express');
 const { handleRegister, handleLogin, handleLogout } = require('../controllers/apiController');
+const { countUsersByGroup, countStudentsByGender, countHousesByDistrict, countHousesByOwner } = require('../controllers/dashboardController');
 const { readFunc, createFunc, updateFunc, deleteFunc, getUserAccount } = require('../controllers/userController');
 const { readFunc: houseReadFunc,
         createFunc: houseCreateFunc,
@@ -24,6 +25,12 @@ router.post('/login', handleLogin);
 router.post('/logout', handleLogout);
 router.get('/account', getUserAccount);
 
+// Dashboard routes
+router.get('/dashboard/user-stats-by-group', countUsersByGroup);
+router.get('/dashboard/student-stats-by-gender', countStudentsByGender);
+router.get('/dashboard/house-stats-by-district', countHousesByDistrict);
+router.get('/dashboard/house-stats-by-owner', countHousesByOwner);
+
 // User routes
 router.get('/user/read', readFunc);
 router.post('/user/create', createFunc);
@@ -39,7 +46,6 @@ router.get('/house/user-by-group', getUserByGroup);
 router.get('/house/province', getProvince);
 router.get('/house/district/by-province/:tinhId', getDistrictByProvince);
 router.get('/house/ward/by-district/:huyenId', getWardByDistrict);
-
 
 // Role routes
 router.get('/role/read', roleReadFunc);
