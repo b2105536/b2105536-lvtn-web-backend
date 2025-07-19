@@ -14,14 +14,6 @@ module.exports = (sequelize, DataTypes) => {
       HoaDon.belongsTo(models.HopDong, {
         foreignKey: 'hopDongId'
       });
-      HoaDon.hasMany(models.CTHD, {
-        foreignKey: 'hoaDonId'
-      });
-      HoaDon.belongsToMany(models.DichVu, {
-        through: 'CTHD',
-        foreignKey: 'hoaDonId',
-        otherKey: 'dichVuId'
-      });
     }
   }
   HoaDon.init({

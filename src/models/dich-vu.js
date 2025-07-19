@@ -11,13 +11,13 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      DichVu.hasMany(models.CTHD, {
+      DichVu.hasMany(models.SuDung, {
         foreignKey: 'dichVuId'
       });
-      DichVu.belongsToMany(models.HoaDon, {
-        through: 'CTHD',
+      DichVu.belongsToMany(models.HopDong, {
+        through: 'SuDung',
         foreignKey: 'dichVuId',
-        otherKey: 'hoaDonId'
+        otherKey: 'hopDongId'
       });
     }
   }

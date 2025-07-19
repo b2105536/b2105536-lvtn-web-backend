@@ -14,6 +14,14 @@ module.exports = (sequelize, DataTypes) => {
       HopDong.hasMany(models.HoaDon, {
         foreignKey: 'hopDongId'
       });
+      HopDong.hasMany(models.SuDung, {
+        foreignKey: 'hopDongId'
+      });
+      HopDong.belongsToMany(models.DichVu, {
+        through: 'SuDung',
+        foreignKey: 'hopDongId',
+        otherKey: 'dichVuId'
+      });
     }
   }
   HopDong.init({
