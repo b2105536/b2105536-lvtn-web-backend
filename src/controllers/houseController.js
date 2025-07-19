@@ -1,6 +1,4 @@
-const userApiService = require('../services/userApiService');
 const houseApiService = require('../services/houseApiService');
-
 
 const readFunc = async (req, res) => {
     try {

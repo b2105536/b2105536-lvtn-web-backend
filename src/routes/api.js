@@ -1,4 +1,5 @@
 const express = require('express');
+const { homeGetHouse } = require('../controllers/homeApiController');
 const { handleRegister, handleLogin, handleLogout } = require('../controllers/apiController');
 const { countUsersByGroup, countStudentsByGender, countHousesByDistrict, countHousesByOwner } = require('../controllers/dashboardController');
 const { readFunc, createFunc, updateFunc, deleteFunc, getUserAccount } = require('../controllers/userController');
@@ -23,6 +24,8 @@ const { readFunc: roleReadFunc,
 const { readFunc: groupReadFunc } = require('../controllers/groupController');
 const { checkUserJWT, checkUserPermission } = require('../middleware/JWTAction');
 const router = express.Router();
+
+router.get('/home/get-house', homeGetHouse);
 
 // Restful API('/route', api)
 router.all('*', checkUserJWT, checkUserPermission);
