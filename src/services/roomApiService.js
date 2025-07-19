@@ -70,8 +70,8 @@ const layPhongTheoTrang = async (page, limit) => {
             limit: limit,
             attributes: ["id", "tenPhong", "coGacXep", "giaThue", "dienTich", "sucChua"],
             include: [
-                    { model: db.BangMa, attributes: ["tuKhoa", "loai", "giaTri"] },
-                    { model: db.Nha, attributes: ["ten"] }
+                    { model: db.BangMa, attributes: ["id", "tuKhoa", "loai", "giaTri"] },
+                    { model: db.Nha, attributes: ["id", "ten"] }
             ],
             order: [['id', 'DESC']]
         });
@@ -117,13 +117,13 @@ const taoPhong = async (data) => {
 
 const capNhatTTPhong = async (data) => {
     try {
-        // if (!data.nhaId) {
-        //     return {
-        //         EM: 'Lỗi! (Empty HouseId)',
-        //         EC: 1,
-        //         DT: 'nhaId'
-        //     };
-        // }
+        if (!data.ttPhongId || !data.nhaId) {
+            return {
+                EM: 'Lỗi! (Empty)',
+                EC: 1,
+                DT: !data.ttPhongId ? 'ttPhongId' : 'nhaId'
+            };
+        }
 
         let phongTro = await db.Phong.findOne({
             where: {id: data.id}
