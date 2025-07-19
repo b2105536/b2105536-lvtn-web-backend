@@ -22,6 +22,11 @@ const { readFunc: roleReadFunc,
         getRoleByGroup,
         assignRoleToGroup } = require('../controllers/roleController');
 const { readFunc: groupReadFunc } = require('../controllers/groupController');
+const { getHousesByEmail,
+        getRoomsByHouse,
+        readFunc: mngStudentReadFunc,
+        createFunc: mngStudentCreateFunc,
+        deleteFunc: mngStudentDeleteFunc } = require('../controllers/manageController');
 const { checkUserJWT, checkUserPermission } = require('../middleware/JWTAction');
 const router = express.Router();
 
@@ -74,5 +79,12 @@ router.post('/role/assign', assignRoleToGroup);
 
 // Group routes
 router.get('/group/read', groupReadFunc);
+
+// Management routes
+router.get('/manage/house-by-email', getHousesByEmail);
+router.get('/manage/room-by-house', getRoomsByHouse);
+router.get('/manage/student/read', mngStudentReadFunc);
+router.post('/manage/student/create', mngStudentCreateFunc);
+router.delete('/manage/student/delete', mngStudentDeleteFunc);
 
 module.exports = router;
