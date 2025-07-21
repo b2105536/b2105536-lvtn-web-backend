@@ -22,6 +22,15 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'hopDongId',
         otherKey: 'dichVuId'
       });
+      HopDong.belongsTo(models.Phong, {
+        foreignKey: 'phongId'
+      });
+      HopDong.belongsTo(models.NguoiDung, {
+        foreignKey: 'sinhVienId'
+      });
+      HopDong.belongsTo(models.BangMa, {
+        foreignKey: 'ttHopDongId'
+      });
     }
   }
   HopDong.init({

@@ -50,13 +50,38 @@ const layPhongTheoNha = async (nhaId) => {
         const danhSachPhong = await db.Phong.findAll({
             where: { nhaId: nhaId },
             attributes: ['id', 'tenPhong', 'coGacXep', 'giaThue', 'dienTich', 'sucChua', 'ttPhongId', 'nhaId'],
-            order: [['tenPhong', 'ASC']]
+            order: [['tenPhong', 'ASC']],
+            include: [
+                {
+                    model: db.HopDong,
+                    where: { ngayKT: null },
+                    required: false,
+                    include: [
+                        {
+                            model: db.NguoiDung,
+                            attributes: ['id', 'hoTen']
+                        }
+                    ]
+                }
+            ]
+        });
+
+        const phongCoTrangThai = danhSachPhong.map(phong => {
+            const hopDong = phong.HopDongs?.[0];
+            const sinhVien = hopDong?.NguoiDung;
+
+            return {
+                ...phong.toJSON(),
+                daChoThue: !!hopDong,
+                hopDongId: hopDong?.id || null,
+                sinhVienThue: sinhVien ? { id: sinhVien.id, hoTen: sinhVien.hoTen } : null
+            };
         });
 
         return {
             EM: 'Lấy danh sách phòng thành công! (Fetched successfully)',
             EC: 0,
-            DT: danhSachPhong
+            DT: phongCoTrangThai
         };
     } catch (e) {
         console.log(e);
@@ -83,10 +108,8 @@ const taoHoacThemHopDongKhach = async (data) => {
 
         let nguoiDung = await db.NguoiDung.findOne({
             where: {
-                [db.Sequelize.Op.or]: [
-                    { soDienThoai: data.soDienThoai },
-                    { email: data.email }
-                ]
+                email: data.email,
+                soDienThoai: data.soDienThoai
             },
             attributes: ['id', 'email', 'soDienThoai', 'nhomId']
         });
@@ -107,7 +130,8 @@ const taoHoacThemHopDongKhach = async (data) => {
 
         const daCoHopDong = await db.HopDong.findOne({
             where: {
-                sinhVienId: nguoiDung.id
+                sinhVienId: nguoiDung.id,
+                ngayKT: null
             }
         });
         if (daCoHopDong) {
@@ -132,19 +156,25 @@ const taoHoacThemHopDongKhach = async (data) => {
             };
         }
 
-        await db.HopDong.create({
+        const newHopDong = await db.HopDong.create({
             ngayLap: new Date(),
             phongId: data.phongId,
             sinhVienId: nguoiDung.id,
             ngayBD: new Date(),
             chuTroId: chuTro.id,
-            giaThueTrongHD: data.giaThue
+            giaThueTrongHD: data.giaThue,
+            ttHopDongId: 8
         });
+
+        await db.Phong.update(
+            { ttPhongId: 5 },
+            { where: { id: data.phongId } }
+        );
 
         return {
             EM: 'Thêm khách vào phòng thành công!',
             EC: 0,
-            DT: null
+            DT: newHopDong
         };
     } catch (e) {
         console.log(e);
@@ -256,27 +286,33 @@ const taoNguoiDung = async (data) => {
     }
 }
 
-const xoaNguoiDungBangId = async (userId) => {
+const xoaHopDongBangId = async (hopDongId, phongId) => {
     try {
-        let nguoiDung = await db.NguoiDung.findOne({
-            where: {id: userId}
+        let hopDong = await db.HopDong.findOne({
+            where: {id: hopDongId}
         });
 
-        if (nguoiDung) {
-            await nguoiDung.destroy();
-
+        if (!hopDong) {
             return {
-                EM: 'Xóa người dùng thành công! (User deleted successfully)',
-                EC: 0,
-                DT: []
-            };
-        } else {
-            return {
-                EM: 'Người dùng không tồn tại. (User does not exited)',
-                EC: 2,
-                DT: []
+                EM: 'Hợp đồng không tồn tại!',
+                EC: 1,
+                DT: null
             };
         }
+
+        
+        await db.HopDong.destroy({ where: { id: hopDongId } });
+
+        await db.Phong.update(
+            { ttPhongId: 6 },
+            { where: { id: phongId } }
+        );
+
+        return {
+            EM: 'Xóa hợp đồng thành công! (Contract deleted successfully)',
+            EC: 0,
+            DT: []
+        };
     } catch (e) {
         console.log(e);
         return {
@@ -294,5 +330,5 @@ module.exports = {
     layTatCaNguoiDung,
     layNguoiDungTheoTrang,
     taoNguoiDung,
-    xoaNguoiDungBangId
+    xoaHopDongBangId
 }

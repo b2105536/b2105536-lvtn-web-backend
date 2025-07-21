@@ -105,7 +105,17 @@ const readFunc = async (req, res) => {
 
 const deleteFunc = async (req, res) => {
     try {
-        let data = await userApiService.xoaNguoiDungBangId(req.body.id);
+        const { hopDongId, phongId } = req.body;
+
+        if (!hopDongId || !phongId) {
+            return res.status(400).json({
+                EM: 'Thiếu thông tin hợp đồng hoặc phòng. (Missing information)',
+                EC: 1,
+                DT: null
+            });
+        }
+
+        let data = await manageApiService.xoaHopDongBangId(hopDongId, phongId);
         return res.status(200).json({
             EM: data.EM, // error message
             EC: data.EC, // error code
