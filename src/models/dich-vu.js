@@ -14,9 +14,6 @@ module.exports = (sequelize, DataTypes) => {
       DichVu.hasMany(models.GiaDichVu, {
         foreignKey: 'dichVuId'
       });
-      DichVu.belongsTo(models.NguoiDung, {
-        foreignKey: 'chuTroId'
-      });
       DichVu.hasMany(models.SuDung, {
         foreignKey: 'dichVuId'
       });
@@ -30,8 +27,7 @@ module.exports = (sequelize, DataTypes) => {
   DichVu.init({
     tenDV: DataTypes.STRING,
     donViTinh: DataTypes.STRING,
-    ghiChuDV: DataTypes.STRING,
-    chuTroId: DataTypes.INTEGER
+    ghiChuDV: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'DichVu',
