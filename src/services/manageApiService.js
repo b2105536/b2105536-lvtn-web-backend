@@ -1,6 +1,6 @@
 const db = require('../models/index');
-const { sdtTonTaiKhong, emailTonTaiKhong, bamMatKhau } = require('./loginRegisterService');
 
+// Khách thuê
 const layTatCaNhaTheoChuSoHuu = async (email) => {
     try {
         let nguoiDung = await db.NguoiDung.findOne({
@@ -186,106 +186,6 @@ const taoHoacThemHopDongKhach = async (data) => {
     }
 };
 
-const layTatCaNguoiDung = async () => {
-    try {
-        let cacNguoiDung = await db.NguoiDung.findAll({
-            attributes: ["id", "soDienThoai", "hoTen", "email", "soDD", "gioiTinh", "ngaySinh", "dcThuongTru"],
-            include: { model: db.NhomND, attributes: ["tenNhom"] }
-        });
-        if (cacNguoiDung) {
-            return {
-                EM: 'Lấy dữ liệu thành công! (Get data successfully)',
-                EC: 0,
-                DT: cacNguoiDung
-            };
-        } else {
-            return {
-                EM: 'Lấy dữ liệu thành công! (Get data successfully)',
-                EC: 0,
-                DT: []
-            };
-        }
-        
-    } catch (e) {
-        console.log(e);
-        return {
-            EM: 'Có gì đó không đúng! (Something went wrong in service)',
-            EC: 1,
-            DT: []
-        };
-    }
-}
-
-const layNguoiDungTheoTrang = async (page, limit) => {
-    try {
-        let offset = (page - 1) * limit;
-        const { count, rows } = await db.NguoiDung.findAndCountAll({
-            offset: offset,
-            limit: limit,
-            attributes: ["id", "soDienThoai", "hoTen", "email", "soDD", "gioiTinh", "ngaySinh", "dcThuongTru"],
-            include: { model: db.NhomND, attributes: ["id", "tenNhom"] },
-            order: [['id', 'DESC']]
-        });
-        let totalPages = Math.ceil(count / limit);
-        let data = {
-            totalRows: count,
-            totalPages: totalPages,
-            users: rows
-        };
-
-        return {
-            EM: 'Ok! (Fetch ok)',
-            EC: 0,
-            DT: data
-        };
-    } catch (e) {
-        console.log(e);
-        return {
-            EM: 'Có gì đó không đúng! (Something went wrong in service)',
-            EC: 1,
-            DT: []
-        };
-    }
-}
-
-const taoNguoiDung = async (data) => {
-    try {
-        let tonTaiSoDienThoai = await sdtTonTaiKhong(data.soDienThoai);
-        if (tonTaiSoDienThoai === true) {
-            return {
-                EM: 'Số điện thoại này đã tồn tại. (This mobile has already existed)',
-                EC: 1,
-                DT: 'soDienThoai'
-            };
-        }
-        
-        let tonTaiEmail = await emailTonTaiKhong(data.email);
-        if (tonTaiEmail === true) {
-            return {
-                EM: 'Email này đã tồn tại. (This email has already existed)',
-                EC: 1,
-                DT: 'email'
-            };
-        }
-
-        let hashPassword = await bamMatKhau(data.matKhau);
-
-        await db.NguoiDung.create({...data, matKhau: hashPassword});
-        return {
-            EM: 'Tạo người dùng thành công! (User created successfully)',
-            EC: 0,
-            DT: []
-        };
-    } catch (e) {
-        console.log(e);
-        return {
-            EM: 'Có gì đó không đúng! (Something went wrong in service)',
-            EC: 1,
-            DT: []
-        };
-    }
-}
-
 const xoaHopDongBangId = async (hopDongId, phongId) => {
     try {
         let hopDong = await db.HopDong.findOne({
@@ -323,12 +223,215 @@ const xoaHopDongBangId = async (hopDongId, phongId) => {
     }
 }
 
+// Dịch vụ:
+const taoDichVu = async (services) => {
+    try {
+        let dvHienThoi = await db.DichVu.findAll({
+            attributes: ['tenDV', 'donViTinh', 'ghiChuDV'],
+            raw: true
+        });
+
+        const persists = services.filter(({ tenDV: tenDV1 }) =>
+            !dvHienThoi.some(({ tenDV: tenDV2 }) => tenDV1 === tenDV2)
+        );
+        
+        if (persists.length === 0) {
+            return {
+                EM: 'Không có dịch vụ để tạo. (Nothing to create)',
+                EC: 0,
+                DT: []
+            };
+        }
+        const dichVuDaTao = await db.DichVu.bulkCreate(persists, { returning: true });
+
+        const duLieuVeGia = [];
+        const bayGio = new Date();
+
+        const donGiaMap = new Map();
+        persists.forEach(dv => {
+            donGiaMap.set(dv.tenDV, dv.donGia || 0);
+        });
+        
+        dichVuDaTao.forEach(dv => {
+            duLieuVeGia.push({
+                donGia: donGiaMap.get(dv.tenDV),
+                thoiDiem: bayGio,
+                dichVuId: dv.id
+            });
+        });
+
+        await db.GiaDichVu.bulkCreate(duLieuVeGia);
+
+        return {
+                EM: `Tạo ${dichVuDaTao.length} dịch vụ thành công! (Service(s) created successfully)`,
+                EC: 0,
+                DT: []
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
+const layTatCaDichVu = async () => {
+    try {
+        let data = await db.DichVu.findAll({
+            include: [
+                {
+                    model: db.GiaDichVu,
+                    attributes: ['donGia', 'thoiDiem'],
+                    limit: 1,
+                    order: [['thoiDiem', 'DESC']]
+                }
+            ],
+            order: [['id', 'DESC']]
+        });
+        return {
+            EM: 'Lấy dữ liệu thành công! (Get data successfully)',
+            EC: 0,
+            DT: data
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
+const layDichVuTheoTrang = async (page, limit) => {
+    try {
+        let offset = (page - 1) * limit;
+        const { count, rows } = await db.DichVu.findAndCountAll({
+            offset: offset,
+            limit: limit,
+            attributes: ["id", "tenDV", "donViTinh", "ghiChuDV"],
+            include: [
+                {
+                    model: db.GiaDichVu,
+                    attributes: ['donGia', 'thoiDiem'],
+                    limit: 1,
+                    order: [['thoiDiem', 'DESC']]
+                }
+            ],
+            order: [['id', 'DESC']]
+        });
+        let totalPages = Math.ceil(count / limit);
+        let data = {
+            totalRows: count,
+            totalPages: totalPages,
+            services: rows
+        };
+        return {
+            EM: 'Ok! (Fetch ok)',
+            EC: 0,
+            DT: data
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
+const xoaDichVuBangId = async (id) => {
+    try {
+        let dichVu = await db.DichVu.findOne({
+            where: {id: id},
+            include: {
+                model: db.GiaDichVu,
+            }
+        });
+
+        if (dichVu) {
+            if (dichVu.GiaDichVus && dichVu.GiaDichVus.length > 0) {
+                await db.GiaDichVu.destroy({
+                    where: { dichVuId: id }
+                });
+            }
+
+            await dichVu.destroy();
+
+            return {
+                EM: 'Xóa dịch vụ thành công! (Service deleted successfully)',
+                EC: 0,
+                DT: []
+            };
+        }
+        
+        return {
+            EM: 'Không tìm thấy dịch vụ. (Service not found)',
+            EC: 1,
+            DT: []
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
+const capNhatDichVu = async (data) => {
+    try {
+        let dichVu = await db.DichVu.findOne({
+            where: {id: data.id}
+        });
+        if (dichVu) {
+            await dichVu.update({
+                tenDV: data.tenDV,
+                donViTinh: data.donViTinh,
+                ghiChuDV: data.ghiChuDV,
+            });
+
+            if (data.donGia) {
+                await db.GiaDichVu.create({
+                    donGia: data.donGia,
+                    thoiDiem: new Date(),
+                    dichVuId: data.id
+                });
+            }
+            return {
+                EM: 'Cập nhật dịch vụ thành công! (Service updated successfully)',
+                EC: 0,
+                DT: ''
+            };
+        } else {
+            return {
+                EM: 'Không tìm thấy dịch vụ. (Service not found)',
+                EC: 2,
+                DT: ''
+            };
+        }
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
 module.exports = {
     layTatCaNhaTheoChuSoHuu,
     layPhongTheoNha,
     taoHoacThemHopDongKhach,
-    layTatCaNguoiDung,
-    layNguoiDungTheoTrang,
-    taoNguoiDung,
-    xoaHopDongBangId
+    xoaHopDongBangId,
+    taoDichVu,
+    layTatCaDichVu,
+    layDichVuTheoTrang,
+    xoaDichVuBangId,
+    capNhatDichVu
 }

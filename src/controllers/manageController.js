@@ -1,6 +1,6 @@
-const userApiService = require('../services/userApiService');
 const manageApiService = require('../services/manageApiService');
 
+// Khách thuê
 const getHousesByEmail = async (req, res) => {
     try {
         const { email } = req.query;
@@ -73,36 +73,6 @@ const createFunc = async (req, res) => {
     }
 };
 
-const readFunc = async (req, res) => {
-    try {
-        if (req.query.page && req.query.limit) {
-            let page = req.query.page;
-            let limit = req.query.limit;
-
-            let data = await userApiService.layNguoiDungTheoTrang(+page, +limit);
-            return res.status(200).json({
-                EM: data.EM, // error message
-                EC: data.EC, // error code
-                DT: data.DT // data (trả về data nên service cũng trả về data)
-            });
-        } else {
-            let data = await userApiService.layTatCaNguoiDung();
-            return res.status(200).json({
-                EM: data.EM, // error message
-                EC: data.EC, // error code
-                DT: data.DT // data (trả về data nên service cũng trả về data)
-            });
-        }
-    } catch (e) {
-        console.log(e);
-        return res.status(500).json({
-            EM: 'error from server', // error message
-            EC: '-1', // error code
-            DT: '' // data
-        });
-    }
-}
-
 const deleteFunc = async (req, res) => {
     try {
         const { hopDongId, phongId } = req.body;
@@ -131,24 +101,98 @@ const deleteFunc = async (req, res) => {
     }
 }
 
-const getUserAccount = async (req, res) => {
-    return res.status(200).json({
-        EM: 'OK', // error message
-        EC: 0, // error code
-        DT: {
-            access_token: req.token,
-            quyenCuaNhom: req.user.quyenCuaNhom,
-            email: req.user.email,
-            hoTen: req.user.hoTen
-        } // data (trả về data nên service cũng trả về data)
-    });
+// Dịch vụ:
+const serviceCreateFunc = async (req, res) => {
+    try {
+        let data = await manageApiService.taoDichVu(req.body);
+        return res.status(200).json({
+            EM: data.EM, // error message
+            EC: data.EC, // error code
+            DT: data.DT // data (trả về data nên service cũng trả về data)
+        });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            EM: 'error from server', // error message
+            EC: '-1', // error code
+            DT: '' // data
+        });
+    }
+}
+
+const serviceReadFunc = async (req, res) => {
+    try {
+        if (req.query.page && req.query.limit) {
+            let page = req.query.page;
+            let limit = req.query.limit;
+
+            let data = await manageApiService.layDichVuTheoTrang(+page, +limit);
+            return res.status(200).json({
+                EM: data.EM, // error message
+                EC: data.EC, // error code
+                DT: data.DT // data (trả về data nên service cũng trả về data)
+            });
+        } else {
+            let data = await manageApiService.layTatCaDichVu();
+            return res.status(200).json({
+                EM: data.EM, // error message
+                EC: data.EC, // error code
+                DT: data.DT // data (trả về data nên service cũng trả về data)
+            });
+        }
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            EM: 'error from server', // error message
+            EC: '-1', // error code
+            DT: '' // data
+        });
+    }
+}
+
+const serviceDeleteFunc = async (req, res) => {
+    try {
+        let data = await manageApiService.xoaDichVuBangId(req.body.id);
+        return res.status(200).json({
+            EM: data.EM, // error message
+            EC: data.EC, // error code
+            DT: data.DT // data (trả về data nên service cũng trả về data)
+        });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            EM: 'error from server', // error message
+            EC: '-1', // error code
+            DT: '' // data
+        });
+    }
+}
+
+const serviceUpdateFunc = async (req, res) => {
+    try {
+        let data = await manageApiService.capNhatDichVu(req.body);
+        return res.status(200).json({
+            EM: data.EM, // error message
+            EC: data.EC, // error code
+            DT: data.DT // data (trả về data nên service cũng trả về data)
+        });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            EM: 'error from server', // error message
+            EC: '-1', // error code
+            DT: '' // data
+        });
+    }
 }
 
 module.exports = {
     getHousesByEmail,
     getRoomsByHouse,
-    readFunc,
     createFunc,
     deleteFunc,
-    getUserAccount
+    serviceCreateFunc,
+    serviceReadFunc,
+    serviceDeleteFunc,
+    serviceUpdateFunc
 }

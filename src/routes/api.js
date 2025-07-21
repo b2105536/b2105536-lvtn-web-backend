@@ -24,9 +24,13 @@ const { readFunc: roleReadFunc,
 const { readFunc: groupReadFunc } = require('../controllers/groupController');
 const { getHousesByEmail,
         getRoomsByHouse,
-        readFunc: mngStudentReadFunc,
+        // readFunc: mngStudentReadFunc,
         createFunc: mngStudentCreateFunc,
-        deleteFunc: mngStudentDeleteFunc } = require('../controllers/manageController');
+        deleteFunc: mngStudentDeleteFunc, 
+        serviceCreateFunc,
+        serviceReadFunc,
+        serviceDeleteFunc,
+        serviceUpdateFunc} = require('../controllers/manageController');
 const { checkUserJWT, checkUserPermission } = require('../middleware/JWTAction');
 const router = express.Router();
 
@@ -83,8 +87,13 @@ router.get('/group/read', groupReadFunc);
 // Management routes
 router.get('/manage/house-by-email', getHousesByEmail);
 router.get('/manage/room-by-house', getRoomsByHouse);
-router.get('/manage/student/read', mngStudentReadFunc);
+// router.get('/manage/student/read', mngStudentReadFunc);
 router.post('/manage/student/create', mngStudentCreateFunc);
 router.delete('/manage/student/delete', mngStudentDeleteFunc);
+
+router.post('/manage/service/create', serviceCreateFunc);
+router.get('/manage/service/read', serviceReadFunc);
+router.delete('/manage/service/delete', serviceDeleteFunc);
+router.put('/manage/service/update', serviceUpdateFunc);
 
 module.exports = router;

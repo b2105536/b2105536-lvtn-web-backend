@@ -18,6 +18,9 @@ module.exports = {
       ghiChuDV: {
         type: Sequelize.STRING
       },
+      chuTroId: {
+        type: Sequelize.INTEGER
+      },
       createdAt: {
         allowNull: false,
         type: Sequelize.DATE
