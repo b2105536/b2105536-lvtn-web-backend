@@ -186,6 +186,63 @@ const serviceUpdateFunc = async (req, res) => {
     }
 }
 
+// Sử dụng:
+const contractReadFunc = async (req, res) => {
+    try {
+            let data = await manageApiService.layTatCaHopDong();
+            return res.status(200).json({
+                EM: data.EM, // error message
+                EC: data.EC, // error code
+                DT: data.DT // data (trả về data nên service cũng trả về data)
+            });
+        }
+    catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            EM: 'error from server', // error message
+            EC: '-1', // error code
+            DT: '' // data
+        });
+    }
+}
+
+const getServiceByContract = async (req, res) => {
+    try {
+        let id = req.params.hopDongId;
+        let data = await manageApiService.layDichVuTheoHopDong(id);
+        return res.status(200).json({
+            EM: data.EM, // error message
+            EC: data.EC, // error code
+            DT: data.DT // data (trả về data nên service cũng trả về data)
+        });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            EM: 'error from server', // error message
+            EC: '-1', // error code
+            DT: '' // data
+        });
+    }
+}
+
+const assignServiceToContract = async (req, res) => {
+    try {
+        let data = await manageApiService.ganDichVuChoHopDong(req.body.data);
+        return res.status(200).json({
+            EM: data.EM, // error message
+            EC: data.EC, // error code
+            DT: data.DT // data (trả về data nên service cũng trả về data)
+        });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            EM: 'error from server', // error message
+            EC: '-1', // error code
+            DT: '' // data
+        });
+    }
+}
+
 module.exports = {
     getHousesByEmail,
     getRoomsByHouse,
@@ -194,5 +251,8 @@ module.exports = {
     serviceCreateFunc,
     serviceReadFunc,
     serviceDeleteFunc,
-    serviceUpdateFunc
+    serviceUpdateFunc,
+    contractReadFunc,
+    getServiceByContract,
+    assignServiceToContract
 }

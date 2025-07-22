@@ -1,3 +1,4 @@
+const { includes } = require('lodash');
 const db = require('../models/index');
 
 // Khách thuê
@@ -424,6 +425,96 @@ const capNhatDichVu = async (data) => {
     }
 }
 
+// Sử dụng:
+const layTatCaHopDong = async () => {
+    try {
+        let data = await db.HopDong.findAll({
+            // attributes: ["id", "ngayLap", "chuTroId", "sinhVienId", "phongId"],
+            include: [
+                {
+                    model: db.NguoiDung,
+                    attributes: ["id", "hoTen"]
+                },
+                {
+                    model: db.Phong,
+                    attributes: ["id", "tenPhong"],
+                }
+            ],
+            order: [['id', 'DESC']]
+        });
+        return {
+            EM: 'Lấy dữ liệu thành công! (Get data successfully)',
+            EC: 0,
+            DT: data
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
+const layDichVuTheoHopDong = async (id) => {
+    try {
+        if (!id) {
+            return {
+                EM: 'Không tìm thấy dịch vụ nào. (Not found any services)',
+                EC: 0,
+                DT: []
+            };
+        }
+
+        let cacDV = await db.HopDong.findOne({
+            where: { id: id },
+            // attributes: ["id", "tenNhom"],
+            include: [
+                {
+                    model: db.DichVu,
+                    attributes: ["id", "tenDV", "donViTinh", "ghiChuDV"],
+                    through: { attributes: [] } // Disable attributes from the join table
+                }
+            ]        
+        })
+
+        return {
+            EM: 'Lấy dịch vụ theo hợp đồng thành công! (Get service(s) by contract successfully)',
+            EC: 0,
+            DT: cacDV
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
+const ganDichVuChoHopDong = async (data) => {
+    try {
+        await db.SuDung.destroy({
+            where: { hopDongId: +data.hopDongId }
+        })
+        await db.SuDung.bulkCreate(data.contractServices);
+        return {
+            EM: 'Gán dịch vụ cho hợp đồng thành công! (Assign service(s) to contract successfully)',
+            EC: 0,
+            DT: []
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
 module.exports = {
     layTatCaNhaTheoChuSoHuu,
     layPhongTheoNha,
@@ -433,5 +524,8 @@ module.exports = {
     layTatCaDichVu,
     layDichVuTheoTrang,
     xoaDichVuBangId,
-    capNhatDichVu
+    capNhatDichVu,
+    layTatCaHopDong,
+    layDichVuTheoHopDong,
+    ganDichVuChoHopDong
 }

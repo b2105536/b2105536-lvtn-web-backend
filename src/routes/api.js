@@ -30,7 +30,10 @@ const { getHousesByEmail,
         serviceCreateFunc,
         serviceReadFunc,
         serviceDeleteFunc,
-        serviceUpdateFunc} = require('../controllers/manageController');
+        serviceUpdateFunc,
+        contractReadFunc,
+        getServiceByContract, 
+        assignServiceToContract } = require('../controllers/manageController');
 const { checkUserJWT, checkUserPermission } = require('../middleware/JWTAction');
 const router = express.Router();
 
@@ -91,9 +94,13 @@ router.get('/manage/room-by-house', getRoomsByHouse);
 router.post('/manage/student/create', mngStudentCreateFunc);
 router.delete('/manage/student/delete', mngStudentDeleteFunc);
 
+router.get('/manage/contract/read', contractReadFunc);
+
 router.post('/manage/service/create', serviceCreateFunc);
 router.get('/manage/service/read', serviceReadFunc);
 router.delete('/manage/service/delete', serviceDeleteFunc);
 router.put('/manage/service/update', serviceUpdateFunc);
+router.get('/manage/service/by-contract/:hopDongId', getServiceByContract);
+router.post('/manage/service/assign', assignServiceToContract);
 
 module.exports = router;
