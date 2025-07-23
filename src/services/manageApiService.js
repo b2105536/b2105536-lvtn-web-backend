@@ -765,6 +765,80 @@ const layThongTinGiayBao = async (hopDongId) => {
     }
 }
 
+const layHoaDonTheoHopDong = async (id) => {
+    try {
+        if (!id) {
+            return {
+                EM: 'Không tìm thấy hóa đơn nào. (Not found any invoices)',
+                EC: 0,
+                DT: []
+            };
+        }
+
+        let cacHoaDon = await db.HopDong.findOne({
+            where: { id: id },
+            // attributes: ["id", "tenNhom"],
+            include: [
+                {
+                    model: db.HoaDon,
+                    attributes: ["id", "ngayTao", "tongTienPhaiTra", "soTienDaTra", "tienDuThangTrc", "ghiChuHD", "hopDongId"]
+                },
+                {
+                    model: db.NguoiDung,
+                    attributes: ["id", "hoTen"]
+                }
+            ]        
+        })
+
+        return {
+            EM: 'Lấy hóa đơn theo hợp đồng thành công! (Get invoice(s) by contract successfully)',
+            EC: 0,
+            DT: cacHoaDon
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
+const capNhatHoaDon = async (data) => {
+    try {
+        const { id, soTienDaTra, tienDuThangTrc, ghiChuHD } = data;
+        
+        let hoaDon = await db.HoaDon.findOne({ where: { id } });
+        if (hoaDon) {
+            await hoaDon.update({
+                soTienDaTra,
+                tienDuThangTrc,
+                ghiChuHD,
+            });
+
+            return {
+                EM: 'Cập nhật hóa đơn thành công! (Invoice updated successfully)',
+                EC: 0,
+                DT: ''
+            };
+        } else {
+            return {
+                EM: 'Không tìm thấy hóa đơn. (Invoice not found)',
+                EC: 2,
+                DT: ''
+            };
+        }
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
 module.exports = {
     layTatCaNhaTheoChuSoHuu,
     layPhongTheoNha,
@@ -780,5 +854,7 @@ module.exports = {
     ganDichVuChoHopDong,
     taoHoaDon,
     layThongTinHoaDon,
-    layThongTinGiayBao
+    layThongTinGiayBao,
+    layHoaDonTheoHopDong,
+    capNhatHoaDon
 }

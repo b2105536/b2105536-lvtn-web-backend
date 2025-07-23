@@ -315,6 +315,43 @@ const getShowInvoiceInfo = async (req, res) => {
     }
 }
 
+const getInvoiceByContract = async (req, res) => {
+    try {
+        let id = req.params.hopDongId;
+        let data = await manageApiService.layHoaDonTheoHopDong(id);
+        return res.status(200).json({
+            EM: data.EM, // error message
+            EC: data.EC, // error code
+            DT: data.DT // data (trả về data nên service cũng trả về data)
+        });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            EM: 'error from server', // error message
+            EC: '-1', // error code
+            DT: '' // data
+        });
+    }
+}
+
+const updateInvoice = async (req, res) => {
+    try {
+        let data = await manageApiService.capNhatHoaDon(req.body.data);
+        return res.status(200).json({
+            EM: data.EM, // error message
+            EC: data.EC, // error code
+            DT: data.DT // data (trả về data nên service cũng trả về data)
+        });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            EM: 'error from server', // error message
+            EC: '-1', // error code
+            DT: '' // data
+        });
+    }
+}
+
 module.exports = {
     getHousesByEmail,
     getRoomsByHouse,
@@ -329,5 +366,7 @@ module.exports = {
     assignServiceToContract,
     createInvoice,
     getInvoiceInfo,
-    getShowInvoiceInfo
+    getShowInvoiceInfo,
+    getInvoiceByContract,
+    updateInvoice
 }
