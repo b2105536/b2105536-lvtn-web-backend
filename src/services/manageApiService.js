@@ -1,4 +1,3 @@
-const { includes } = require('lodash');
 const db = require('../models/index');
 
 // Khách thuê
@@ -515,6 +514,180 @@ const ganDichVuChoHopDong = async (data) => {
     }
 }
 
+const layGiaHienTai = async (dichVuId) => {
+    const gia = await db.GiaDichVu.findOne({
+        where: { dichVuId },
+        order: [['thoiDiem', 'DESC']],
+    });
+
+    return Number(gia?.donGia) || 0;
+};
+
+const taoHoaDon = async (data) => {
+    try {
+        const { hopDongId, ngayGN, dien, nuoc, dichVuKhac } = data;
+
+        if (!hopDongId || !ngayGN) {
+            return {
+                EM: 'Thiếu dữ liệu!',
+                EC: 1,
+                DT: []
+            };
+        }
+
+        let tongTien = 0;
+        const suDung = [];
+
+        if (dien && dien.dichVuId) {
+            const giaDien = await layGiaHienTai(dien.dichVuId);
+            const soLuong = dien.csSau - dien.csTrc;
+            const tien = soLuong * Number(giaDien);
+            tongTien += tien;
+
+            suDung.push({
+                hopDongId,
+                dichVuId: dien.dichVuId,
+                csTrc: dien.csTrc,
+                csSau: dien.csSau,
+                ngayGN
+            });
+        }
+
+        if (nuoc && nuoc.dichVuId) {
+            const giaNuoc = await layGiaHienTai(nuoc.dichVuId);
+            const soLuong = nuoc.csSau - nuoc.csTrc;
+            const tien = soLuong * Number(giaNuoc);
+
+            tongTien += tien;
+
+            suDung.push({
+                hopDongId,
+                dichVuId: nuoc.dichVuId,
+                csTrc: nuoc.csTrc,
+                csSau: nuoc.csSau,
+                ngayGN
+            });
+        }
+
+        if (dichVuKhac && dichVuKhac.length > 0) {
+            for (let dv of dichVuKhac) {
+                if (!dv.dichVuId) continue;
+                const gia = await layGiaHienTai(dv.dichVuId);
+
+                tongTien += Number(gia);
+
+                suDung.push({
+                    hopDongId,
+                    dichVuId: dv.dichVuId,
+                    csTrc: 0,
+                    csSau: 0,
+                    ngayGN
+                });
+            }
+        }
+
+        await db.SuDung.bulkCreate(suDung);
+
+        const hopDong = await db.HopDong.findOne({
+            where: { id: hopDongId }
+        });
+        const giaThue = Number(hopDong?.giaThueTrongHD) || 0;
+        tongTien += giaThue;
+
+        const hoaDon = await db.HoaDon.create({
+            hopDongId,
+            ngayTao: ngayGN,
+            tongTienPhaiTra: tongTien,
+            soTienDaTra: 0,
+            tienDuThangTrc: 0,
+            ghiChuHD: null
+        })
+
+        return {
+            EM: 'Tạo hóa đơn thành công! (Invoice created successfully)',
+            EC: 0,
+            DT: { id: hoaDon.id }
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
+const layThongTinHoaDon = async (hopDongId) => {
+    try {
+        const hopDong = await db.HopDong.findOne({
+            where: { id: hopDongId },
+            include: [
+                {
+                    model: db.NguoiDung,
+                    attributes: ['hoTen']
+                },
+                {
+                    model: db.DichVu,
+                    include: [
+                        {
+                            model: db.GiaDichVu,
+                            order: [['thoiDiem', 'DESC']],
+                            limit: 1
+                        }
+                    ]
+                }
+            ]
+        });
+
+        if (!hopDong) return { EC: 1, EM: 'Không tìm thấy hợp đồng' };
+
+        const ngayGN = new Date();
+
+        const dsDichVu = await Promise.all(
+            hopDong.DichVus.map(async (dv) => {
+                const lastSD = await db.SuDung.findOne({
+                    where: {
+                        hopDongId,
+                        dichVuId: dv.id,
+                        ngayGN: {
+                            [db.Sequelize.Op.lte]: ngayGN
+                        }
+                    },
+                    order: [['ngayGN', 'DESC']]
+                });
+
+                return {
+                    tenDV: dv.tenDV,
+                    donGia: dv.GiaDichVus?.[0]?.donGia || 0,
+                    dichVuId: dv.id,
+                    csTrcGanNhat: lastSD?.csSau || 0
+                };
+            })
+        );
+
+        const data = {
+            hoTen: hopDong.NguoiDung?.hoTen || 'Không rõ',
+            ngayGN,
+            giaThue: hopDong.giaThueTrongHD || 0,
+            DichVus: dsDichVu
+        };
+
+        return {
+            EM: 'Lấy dữ liệu thành công! (Get data successfully)',
+            EC: 0,
+            DT: data
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
 module.exports = {
     layTatCaNhaTheoChuSoHuu,
     layPhongTheoNha,
@@ -527,5 +700,7 @@ module.exports = {
     capNhatDichVu,
     layTatCaHopDong,
     layDichVuTheoHopDong,
-    ganDichVuChoHopDong
+    ganDichVuChoHopDong,
+    taoHoaDon,
+    layThongTinHoaDon
 }
