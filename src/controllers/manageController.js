@@ -245,7 +245,6 @@ const assignServiceToContract = async (req, res) => {
 
 const createInvoice = async (req, res) => {
     try {
-        console.log('req.body.data', req.body.data);
         let data = await manageApiService.taoHoaDon(req.body.data);
         return res.status(200).json({
             EM: data.EM, // error message
@@ -289,6 +288,33 @@ const getInvoiceInfo = async (req, res) => {
     }
 }
 
+const getShowInvoiceInfo = async (req, res) => {
+    try {
+        const hopDongId = req.params.hopDongId;
+        if (!hopDongId) {
+            return res.status(200).json({
+                EM: 'Missing required parameter', // error message
+                EC: '1', // error code
+                DT: '' // data
+            })
+        }
+        
+        let data = await manageApiService.layThongTinGiayBao(hopDongId);
+        return res.status(200).json({
+            EM: data.EM, // error message
+            EC: data.EC, // error code
+            DT: data.DT // data (trả về data nên service cũng trả về data)
+        });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            EM: 'error from server', // error message
+            EC: '-1', // error code
+            DT: '' // data
+        });
+    }
+}
+
 module.exports = {
     getHousesByEmail,
     getRoomsByHouse,
@@ -302,5 +328,6 @@ module.exports = {
     getServiceByContract,
     assignServiceToContract,
     createInvoice,
-    getInvoiceInfo
+    getInvoiceInfo,
+    getShowInvoiceInfo
 }

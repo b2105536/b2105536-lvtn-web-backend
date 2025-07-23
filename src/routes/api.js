@@ -35,7 +35,8 @@ const { getHousesByEmail,
         getServiceByContract, 
         assignServiceToContract,
         createInvoice, 
-        getInvoiceInfo} = require('../controllers/manageController');
+        getInvoiceInfo,
+        getShowInvoiceInfo } = require('../controllers/manageController');
 const { checkUserJWT, checkUserPermission } = require('../middleware/JWTAction');
 const router = express.Router();
 
@@ -107,5 +108,6 @@ router.post('/manage/service/assign', assignServiceToContract);
 
 router.get('/manage/invoice/by-contract/:hopDongId', getInvoiceInfo);
 router.post('/manage/invoice/create', createInvoice);
+router.get('/manage/invoice/show/:hopDongId', getShowInvoiceInfo);
 
 module.exports = router;

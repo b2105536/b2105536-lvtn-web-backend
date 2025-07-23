@@ -688,6 +688,83 @@ const layThongTinHoaDon = async (hopDongId) => {
     }
 }
 
+const layThongTinGiayBao = async (hopDongId) => {
+    try {
+        const hopDong = await db.HopDong.findOne({
+            where: { id: hopDongId },
+            include: [
+                {
+                    model: db.NguoiDung,
+                    attributes: ['hoTen']
+                },
+                {
+                    model: db.DichVu,
+                    include: [
+                        {
+                            model: db.GiaDichVu,
+                            order: [['thoiDiem', 'DESC']],
+                            limit: 1
+                        }
+                    ]
+                }
+            ]
+        });
+
+        if (!hopDong) return { EC: 1, EM: 'Không tìm thấy hợp đồng' };
+
+        const lastUsage = await db.SuDung.findOne({
+            where: { hopDongId },
+            order: [['ngayGN', 'DESC']]
+        });
+
+        const ngayGN = lastUsage?.ngayGN || new Date();
+        // const ngayGN = new Date();
+
+        const dsDichVu = await Promise.all(
+            hopDong.DichVus.map(async (dv) => {
+                const lastSD = await db.SuDung.findOne({
+                    where: {
+                        hopDongId,
+                        dichVuId: dv.id,
+                        ngayGN: {
+                            [db.Sequelize.Op.lte]: ngayGN
+                        }
+                    },
+                    order: [['ngayGN', 'DESC']]
+                });
+
+                return {
+                    tenDV: dv.tenDV,
+                    donGia: dv.GiaDichVus?.[0]?.donGia || 0,
+                    dichVuId: dv.id,
+                    csTrcGanNhat: lastSD?.csTrc || 0,
+                    csSauGanNhat: lastSD?.csSau || 0
+                };
+            })
+        );
+
+        const data = {
+            hoTen: hopDong.NguoiDung?.hoTen || 'Không rõ',
+            ngayGN,
+            giaThue: hopDong.giaThueTrongHD || 0,
+            DichVus: dsDichVu
+        };
+
+        return {
+            EM: 'Lấy dữ liệu thành công! (Get data successfully)',
+            EC: 0,
+            DT: data
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
 module.exports = {
     layTatCaNhaTheoChuSoHuu,
     layPhongTheoNha,
@@ -702,5 +779,6 @@ module.exports = {
     layDichVuTheoHopDong,
     ganDichVuChoHopDong,
     taoHoaDon,
-    layThongTinHoaDon
+    layThongTinHoaDon,
+    layThongTinGiayBao
 }
