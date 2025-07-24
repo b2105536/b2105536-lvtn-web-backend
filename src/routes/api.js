@@ -40,6 +40,7 @@ const { getHousesByEmail,
         getInvoiceByContract,
         updateInvoice } = require('../controllers/manageController');
 const { checkUserJWT, checkUserPermission } = require('../middleware/JWTAction');
+const { paymentReadFunc } = require('../controllers/paymentController');
 const router = express.Router();
 
 router.get('/home/get-house', homeGetHouse);
@@ -113,5 +114,7 @@ router.post('/manage/invoice/create', createInvoice);
 router.get('/manage/invoice/show/:hopDongId', getShowInvoiceInfo);
 router.get('/manage/invoice/read/:hopDongId', getInvoiceByContract);
 router.post('/manage/invoice/update', updateInvoice);
+
+router.get('/payment/info-by-email', paymentReadFunc);
 
 module.exports = router;

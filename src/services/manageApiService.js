@@ -775,25 +775,51 @@ const layHoaDonTheoHopDong = async (id) => {
             };
         }
 
-        let cacHoaDon = await db.HopDong.findOne({
+        let hopDong = await db.HopDong.findOne({
             where: { id: id },
             // attributes: ["id", "tenNhom"],
             include: [
-                {
-                    model: db.HoaDon,
-                    attributes: ["id", "ngayTao", "tongTienPhaiTra", "soTienDaTra", "tienDuThangTrc", "ghiChuHD", "hopDongId"]
-                },
                 {
                     model: db.NguoiDung,
                     attributes: ["id", "hoTen"]
                 }
             ]        
-        })
+        });
+
+        if (!hopDong) {
+            return {
+                EM: 'Không tìm thấy hợp đồng. (Contract not found)',
+                EC: 1,
+                DT: null
+            };
+        }
+
+        let hoaDonChuaTT = await db.HoaDon.findOne({
+            where: {
+                hopDongId: id,
+                [db.Sequelize.Op.or]: [
+                    db.sequelize.where(
+                        db.sequelize.cast(db.sequelize.col('soTienDaTra'), 'DECIMAL'),
+                        '<',
+                        db.sequelize.col('tongTienPhaiTra')
+                    ),
+                    {
+                        soTienDaTra: null
+                    }
+                ]
+            },
+            order: [['ngayTao', 'DESC']]
+        });
+
+        console.log(hoaDonChuaTT)
 
         return {
             EM: 'Lấy hóa đơn theo hợp đồng thành công! (Get invoice(s) by contract successfully)',
             EC: 0,
-            DT: cacHoaDon
+            DT: {
+                NguoiDung: hopDong.NguoiDung,
+                hoaDon: hoaDonChuaTT
+            }
         };
     } catch (e) {
         console.log(e);
