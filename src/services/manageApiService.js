@@ -811,8 +811,6 @@ const layHoaDonTheoHopDong = async (id) => {
             order: [['ngayTao', 'DESC']]
         });
 
-        console.log(hoaDonChuaTT)
-
         return {
             EM: 'Lấy hóa đơn theo hợp đồng thành công! (Get invoice(s) by contract successfully)',
             EC: 0,

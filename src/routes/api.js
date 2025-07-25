@@ -40,10 +40,11 @@ const { getHousesByEmail,
         getInvoiceByContract,
         updateInvoice } = require('../controllers/manageController');
 const { checkUserJWT, checkUserPermission } = require('../middleware/JWTAction');
-const { paymentReadFunc } = require('../controllers/paymentController');
+const { paymentReadFunc, paymentCreateOrderFunc, paymentCallbackFunc } = require('../controllers/paymentController');
 const router = express.Router();
 
 router.get('/home/get-house', homeGetHouse);
+router.post('/payment/zalopay/callback', paymentCallbackFunc);
 
 // Restful API('/route', api)
 router.all('*', checkUserJWT, checkUserPermission);
@@ -116,5 +117,6 @@ router.get('/manage/invoice/read/:hopDongId', getInvoiceByContract);
 router.post('/manage/invoice/update', updateInvoice);
 
 router.get('/payment/info-by-email', paymentReadFunc);
+router.post('/payment/zalopay/create-order', paymentCreateOrderFunc);
 
 module.exports = router;
