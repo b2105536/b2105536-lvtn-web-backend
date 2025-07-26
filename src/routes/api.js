@@ -40,7 +40,7 @@ const { getHousesByEmail,
         getInvoiceByContract,
         updateInvoice } = require('../controllers/manageController');
 const { checkUserJWT, checkUserPermission } = require('../middleware/JWTAction');
-const { paymentReadFunc, paymentCreateOrderFunc, paymentCallbackFunc } = require('../controllers/paymentController');
+const { paymentReadFunc, paymentCreateOrderFunc, paymentCallbackFunc, getInvoiceByEmail, getDetailInvoice } = require('../controllers/paymentController');
 const router = express.Router();
 
 router.get('/home/get-house', homeGetHouse);
@@ -116,7 +116,11 @@ router.get('/manage/invoice/show/:hopDongId', getShowInvoiceInfo);
 router.get('/manage/invoice/read/:hopDongId', getInvoiceByContract);
 router.post('/manage/invoice/update', updateInvoice);
 
+// Other routes
 router.get('/payment/info-by-email', paymentReadFunc);
 router.post('/payment/zalopay/create-order', paymentCreateOrderFunc);
+
+router.get('/invoice/read', getInvoiceByEmail);
+router.get('/invoice/:id', getDetailInvoice);
 
 module.exports = router;

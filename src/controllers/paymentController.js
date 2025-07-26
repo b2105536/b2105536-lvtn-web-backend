@@ -7,7 +7,7 @@ const paymentReadFunc = async (req, res) => {
         const email = req.query.email;
         
         if (!email) {
-            return res.status(200).json({
+            return res.status(400).json({
                 EM: 'Thiếu email sinh viên.', // error message
                 EC: '1', // error code
                 DT: '' // data
@@ -28,7 +28,7 @@ const paymentReadFunc = async (req, res) => {
             DT: '' // data
         });
     }
-}
+};
 
 const paymentCreateOrderFunc = async (req, res) => {
     try {
@@ -88,8 +88,66 @@ const paymentCallbackFunc = async (req, res) => {
     }
 };
 
+const getInvoiceByEmail = async (req, res) => {
+    try {
+        const email = req.query.email;
+
+        if (!email) {
+            return res.status(400).json({
+                EM: 'Thiếu email sinh viên.',
+                EC: 1,
+                DT: ''
+            });
+        }
+
+        const data = await paymentService.layHoaDonTheoEmail(email);
+        return res.status(200).json({
+            EM: data.EM, // error message
+            EC: data.EC, // error code
+            DT: data.DT // data (trả về data nên service cũng trả về data)
+        });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            EM: 'error from server', // error message
+            EC: '-1', // error code
+            DT: '' // data
+        });
+    }
+}
+
+const getDetailInvoice = async (req, res) => {
+    try {
+        const hoaDonId = req.params.id;
+
+        if (!hoaDonId) {
+            return res.status(400).json({
+                EM: 'Thiếu mã hóa đơn.', // error message
+                EC: '1', // error code
+                DT: '' // data
+            });
+        }
+        
+        let data = await paymentService.layChiTietHoaDon(hoaDonId);
+        return res.status(200).json({
+            EM: data.EM, // error message
+            EC: data.EC, // error code
+            DT: data.DT // data (trả về data nên service cũng trả về data)
+        });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            EM: 'error from server', // error message
+            EC: '-1', // error code
+            DT: '' // data
+        });
+    }
+};
+
 module.exports = {
     paymentReadFunc,
     paymentCreateOrderFunc,
-    paymentCallbackFunc
+    paymentCallbackFunc,
+    getInvoiceByEmail,
+    getDetailInvoice
 }

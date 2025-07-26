@@ -187,8 +187,158 @@ const capNhatHoaDonSauKhiThanhToan = async (hoaDonId, soTienDaTra) => {
     }
 };
 
+const layHoaDonTheoEmail = async (email) => {
+    try {
+        const sinhVien = await db.NguoiDung.findOne({
+            where: { email },
+            attributes: ['id', 'hoTen']
+        });
+
+        if (!sinhVien) {
+            return {
+                EC: 1,
+                EM: 'Không tìm thấy sinh viên với email này.',
+                DT: null
+            };
+        }
+
+        const cacHopDong = await db.HopDong.findAll({
+            where: { sinhVienId: sinhVien.id },
+            attributes: ['id'],
+        });
+
+        const hopDongId = cacHopDong.map(hd => hd.id);
+
+        const cacHoaDon = await db.HoaDon.findAll({
+            where: { hopDongId: hopDongId },
+            include: [
+                {
+                    model: db.HopDong,
+                    include: [
+                        {
+                            model: db.Phong,
+                            attributes: ['tenPhong']
+                        },
+                        {
+                            model: db.NguoiDung,
+                            attributes: ['hoTen']
+                        }
+                    ]
+                }
+            ],
+            order: [['ngayTao', 'DESC']]
+        });
+
+        return {
+            EC: 0,
+            EM: 'Lấy hóa đơn thành công! (Get all invoices successfully)',
+            DT: cacHoaDon
+        };
+
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong)',
+            EC: 1,
+            DT: []
+        };
+    }
+};
+
+const layChiTietHoaDon = async (hoaDonId) => {
+    try {
+        const hoaDon = await db.HoaDon.findOne({
+            where: { id: hoaDonId },
+            include: [
+                {
+                    model: db.HopDong,
+                    include: [
+                        {
+                            model: db.DichVu,
+                            include: [
+                                {
+                                    model: db.GiaDichVu,
+                                    order: [['thoiDiem', 'DESC']],
+                                    limit: 1
+                                }
+                            ]
+                        },
+                        {
+                            model: db.NguoiDung,
+                            attributes: ['hoTen']
+                        },
+                        {
+                            model: db.Phong,
+                            attributes: ['tenPhong']
+                        }
+                    ]
+                }
+            ]
+        });
+
+        if (!hoaDon || !hoaDon.HopDong) {
+            return { EC: 1, EM: 'Không tìm thấy hóa đơn hoặc hợp đồng.', DT: null };
+        }
+
+        const hopDong = hoaDon.HopDong;
+        const ngayGN = hoaDon.ngayTao;
+
+        const suDungList = await db.SuDung.findAll({
+            where: {
+                hopDongId: hopDong.id,
+                ngayGN: ngayGN
+            }
+        });
+
+        const chiTietDichVu = await Promise.all(
+            hopDong.DichVus.map(async (dv) => {
+                const gia = dv.GiaDichVus?.[0]?.donGia || 0;
+
+                const sd = suDungList.find(item => item.dichVuId === dv.id);
+
+                return {
+                    tenDV: dv.tenDV,
+                    donGia: gia,
+                    dichVuId: dv.id,
+                    csTrc: sd?.csTrc || 0,
+                    csSau: sd?.csSau || 0
+                };
+            })
+        );
+
+        const result = {
+            hoaDonId: hoaDon.id,
+            ngayTao: hoaDon.ngayTao,
+            tongTienPhaiTra: hoaDon.tongTienPhaiTra,
+            soTienDaTra: hoaDon.soTienDaTra,
+            tienDuThangTrc: hoaDon.tienDuThangTrc,
+            ghiChuHD: hoaDon.ghiChuHD,
+            tenPhong: hopDong.Phong.tenPhong,
+            giaThue: hopDong.giaThueTrongHD,
+            hoTen: hopDong.NguoiDung.hoTen,
+            DichVus: chiTietDichVu
+        };
+
+        return {
+            EC: 0,
+            EM: 'Lấy chi tiết hóa đơn thành công! (Get invoice details successfully)',
+            DT: result
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong)',
+            EC: 1,
+            DT: []
+        };
+    }
+    
+};
+
 module.exports = {
     layThongTinGiayBaoTheoEmail,
     taoThanhToanZaloPay,
-    capNhatHoaDonSauKhiThanhToan
+    capNhatHoaDonSauKhiThanhToan,
+    layHoaDonTheoEmail,
+    layChiTietHoaDon
 }
