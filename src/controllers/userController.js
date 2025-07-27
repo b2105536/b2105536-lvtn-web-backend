@@ -2,11 +2,12 @@ const userApiService = require('../services/userApiService');
 
 const readFunc = async (req, res) => {
     try {
-        if (req.query.page && req.query.limit) {
+        if (req.query.page && req.query.limit && req.query.nhomId) {
             let page = req.query.page;
             let limit = req.query.limit;
+            let nhomId = req.query.nhomId;
 
-            let data = await userApiService.layNguoiDungTheoTrang(+page, +limit);
+            let data = await userApiService.layNguoiDungTheoTrang(+page, +limit, nhomId);
             return res.status(200).json({
                 EM: data.EM, // error message
                 EC: data.EC, // error code

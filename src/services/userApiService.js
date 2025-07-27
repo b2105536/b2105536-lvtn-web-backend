@@ -31,12 +31,18 @@ const layTatCaNguoiDung = async () => {
     }
 }
 
-const layNguoiDungTheoTrang = async (page, limit) => {
+const layNguoiDungTheoTrang = async (page, limit, nhomId) => {
     try {
         let offset = (page - 1) * limit;
+        let whereClause = {};
+        if (nhomId && nhomId !== 'ALL') {
+            whereClause.nhomId = +nhomId;
+        }
+
         const { count, rows } = await db.NguoiDung.findAndCountAll({
             offset: offset,
             limit: limit,
+            where: whereClause,
             attributes: ["id", "soDienThoai", "hoTen", "email", "soDD", "gioiTinh", "ngaySinh", "dcThuongTru"],
             include: { model: db.NhomND, attributes: ["id", "tenNhom"] },
             order: [['id', 'DESC']]
