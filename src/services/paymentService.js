@@ -269,7 +269,19 @@ const layChiTietHoaDon = async (hoaDonId) => {
                         },
                         {
                             model: db.Phong,
-                            attributes: ['tenPhong']
+                            attributes: ['tenPhong'],
+                            include: [
+                                {
+                                    model: db.Nha,
+                                    attributes: ['ten'],
+                                    include: [
+                                        {
+                                            model: db.NguoiDung,
+                                            attributes: ['soDienThoai', 'hoTen']
+                                        }
+                                    ]
+                                }
+                            ]
                         }
                     ]
                 }
@@ -313,6 +325,8 @@ const layChiTietHoaDon = async (hoaDonId) => {
             soTienDaTra: hoaDon.soTienDaTra,
             tienDuThangTrc: hoaDon.tienDuThangTrc,
             ghiChuHD: hoaDon.ghiChuHD,
+            ten: hopDong.Phong.Nha.ten,
+            soDienThoai: hopDong.Phong.Nha.NguoiDung.soDienThoai,
             tenPhong: hopDong.Phong.tenPhong,
             giaThue: hopDong.giaThueTrongHD,
             hoTen: hopDong.NguoiDung.hoTen,
