@@ -1,4 +1,5 @@
 const db = require('../models/index');
+const { Op } = require('sequelize');
 
 const layTatCaMa = async (typeInput) => {
     try {
@@ -62,12 +63,37 @@ const layTatCaPhong = async () => {
     }
 }
 
-const layPhongTheoTrang = async (page, limit) => {
+const layPhongTheoTrang = async (page, limit, nhaId, ttPhongId, giaThueTu, giaThueDen) => {
     try {
         let offset = (page - 1) * limit;
+        let whereClause = {};
+
+        if (nhaId && nhaId !== 'ALL') {
+            whereClause.nhaId = +nhaId;
+        }
+
+        if (ttPhongId && ttPhongId !== 'ALL') {
+            whereClause.ttPhongId = ttPhongId;
+        }
+
+        if (giaThueTu && giaThueDen) {
+            whereClause.giaThue = {
+                [Op.between]: [Number(giaThueTu), Number(giaThueDen)]
+            };
+        } else if (giaThueTu) {
+            whereClause.giaThue = {
+                [Op.gte]: Number(giaThueTu)
+            };
+        } else if (giaThueDen) {
+            whereClause.giaThue = {
+                [Op.lte]: Number(giaThueDen)
+            };
+        }
+
         const { count, rows } = await db.Phong.findAndCountAll({
             offset: offset,
             limit: limit,
+            where: whereClause,
             attributes: ["id", "tenPhong", "coGacXep", "giaThue", "dienTich", "sucChua"],
             include: [
                     { model: db.BangMa, attributes: ["id", "tuKhoa", "loai", "giaTri"] },
@@ -213,6 +239,30 @@ const layNhaTro = async () => {
     }
 }
 
+const layKhoangGia = async () => {
+    try {
+        let ranges = [
+            { id: 1, label: 'Dưới 1 triệu', giaThueTu: 0, giaThueDen: 1000000 },
+            { id: 2, label: '1 - 1.5 triệu', giaThueTu: 1000000, giaThueDen: 1500000 },
+            { id: 3, label: '1.5 - 2 triệu', giaThueTu: 1500000, giaThueDen: 2000000 },
+            { id: 4, label: 'Trên 2 triệu', giaThueTu: 2000000, giaThueDen: null },
+        ];
+        
+        return {
+            EM: 'Lấy danh sách khoảng giá thành công! (Get list of rent ranges successfully)',
+            EC: 0,
+            DT: ranges
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
 module.exports = {
     layTatCaMa,
     layTatCaPhong,
@@ -220,5 +270,6 @@ module.exports = {
     taoPhong,
     capNhatTTPhong,
     xoaPhongBangId,
-    layNhaTro
+    layNhaTro,
+    layKhoangGia
 }

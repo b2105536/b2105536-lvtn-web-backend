@@ -2,11 +2,12 @@ const houseApiService = require('../services/houseApiService');
 
 const readFunc = async (req, res) => {
     try {
-        if (req.query.page && req.query.limit) {
+        if (req.query.page && req.query.limit && req.query.chuTroId) {
             let page = req.query.page;
             let limit = req.query.limit;
+            let chuTroId = req.query.chuTroId;
 
-            let data = await houseApiService.layNhaTheoTrang(+page, +limit);
+            let data = await houseApiService.layNhaTheoTrang(+page, +limit, chuTroId);
             return res.status(200).json({
                 EM: data.EM, // error message
                 EC: data.EC, // error code

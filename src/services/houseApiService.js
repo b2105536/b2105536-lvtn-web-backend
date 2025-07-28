@@ -53,12 +53,18 @@ const layTatCaNha = async () => {
     }
 }
 
-const layNhaTheoTrang = async (page, limit) => {
+const layNhaTheoTrang = async (page, limit, chuTroId) => {
     try {
         let offset = (page - 1) * limit;
+        let whereClause = {};
+        if (chuTroId && chuTroId !== 'ALL') {
+            whereClause.chuTroId = +chuTroId;
+        }
+
         const { count, rows } = await db.Nha.findAndCountAll({
             offset: offset,
             limit: limit,
+            where: whereClause,
             attributes: ["id", "ten", "diaChi", "moTa"],
             include:[
                 { 

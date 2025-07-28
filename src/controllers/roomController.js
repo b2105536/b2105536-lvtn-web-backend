@@ -3,10 +3,10 @@ const roomApiService = require('../services/roomApiService');
 const getAllCode = async (req, res) => {
     try {
         let data = await roomApiService.layTatCaMa(req.query.loai);
-            return res.status(200).json({
-                EM: data.EM, // error message
-                EC: data.EC, // error code
-                DT: data.DT // data (trả về data nên service cũng trả về data)
+        return res.status(200).json({
+            EM: data.EM, // error message
+            EC: data.EC, // error code
+            DT: data.DT // data (trả về data nên service cũng trả về data)
         });
     } catch (e) {
         console.log(e);
@@ -20,11 +20,13 @@ const getAllCode = async (req, res) => {
 
 const readFunc = async (req, res) => {
     try {
-        if (req.query.page && req.query.limit) {
-            let page = req.query.page;
-            let limit = req.query.limit;
-        
-            let data = await roomApiService.layPhongTheoTrang(+page, +limit);
+        let { page, limit, nhaId, ttPhongId, giaThueTu, giaThueDen } = req.query;
+
+        if (page && limit && nhaId) {
+            let data = await roomApiService.layPhongTheoTrang(
+                +page, +limit, nhaId, ttPhongId, giaThueTu, giaThueDen
+            );
+
             return res.status(200).json({
                 EM: data.EM, // error message
                 EC: data.EC, // error code
@@ -130,11 +132,49 @@ const houseReadFunction = async (req, res) => {
     }
 }
 
+const getRoomStatuses = async (req, res) => {
+    try {
+        let data = await roomApiService.layTatCaMa('TTPHONG');
+        return res.status(200).json({
+            EM: data.EM,
+            EC: data.EC,
+            DT: data.DT
+        });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            EM: 'error from server', // error message
+            EC: '-1', // error code
+            DT: '' // data
+        });
+    }
+};
+
+const getRentRanges = async (req, res) => {
+    try {
+        const data = await roomApiService.layKhoangGia();
+        return res.status(200).json({
+            EM: data.EM,
+            EC: data.EC,
+            DT: data.DT
+        });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            EM: 'error from server', // error message
+            EC: '-1', // error code
+            DT: '' // data
+        });
+    }
+};
+
 module.exports = {
     getAllCode,
     readFunc,
     createFunc,
     updateFunc,
     deleteFunc,
-    houseReadFunction
+    houseReadFunction,
+    getRoomStatuses,
+    getRentRanges
 }
