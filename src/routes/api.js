@@ -2,7 +2,7 @@ const express = require('express');
 const { homeGetHouse } = require('../controllers/homeApiController');
 const { handleRegister, handleLogin, handleLogout } = require('../controllers/apiController');
 const { countUsersByGroup, countStudentsByGender, countHousesByDistrict, countHousesByOwner } = require('../controllers/dashboardController');
-const { readFunc, createFunc, updateFunc, deleteFunc, getUserAccount } = require('../controllers/userController');
+const { readFunc, createFunc, updateFunc, deleteFunc, getUserAccount, handleChangePassword } = require('../controllers/userController');
 const { readFunc: houseReadFunc,
         createFunc: houseCreateFunc,
         updateFunc: houseUpdateFunc,
@@ -64,6 +64,7 @@ router.get('/user/read', readFunc);
 router.post('/user/create', createFunc);
 router.put('/user/update', updateFunc);
 router.delete('/user/delete', deleteFunc);
+router.post('/user/change-password', handleChangePassword);
 
 // House routes
 router.get('/house/read', houseReadFunc);

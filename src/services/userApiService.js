@@ -1,5 +1,5 @@
 const db = require('../models/index');
-const { sdtTonTaiKhong, emailTonTaiKhong, bamMatKhau } = require('./loginRegisterService');
+const { sdtTonTaiKhong, emailTonTaiKhong, bamMatKhau, kiemTraMatKhau } = require('./loginRegisterService');
 
 const layTatCaNguoiDung = async () => {
     try {
@@ -183,10 +183,61 @@ const xoaNguoiDungBangId = async (userId) => {
     }
 }
 
+const doiMatKhau = async (email, oldPassword, newPassword) => {
+    try {
+        const user = await db.NguoiDung.findOne({ where: { email } });
+        if (!user) {
+            return {
+                EM: 'Không tìm thấy người dùng.',
+                EC: 1
+            };
+        }
+
+        const matKhauDung = kiemTraMatKhau(oldPassword, user.matKhau);
+        if (!matKhauDung) {
+            return {
+                EM: 'Mật khẩu cũ không đúng.',
+                EC: 1
+            };
+        }
+
+        if (oldPassword === newPassword) {
+            return {
+                EM: 'Mật khẩu mới phải khác mật khẩu cũ.',
+                EC: 1
+            };
+        }
+
+        if (newPassword.length < 8) {
+            return {
+                EM: 'Mật khẩu mới phải có ít nhất 8 ký tự.',
+                EC: 1
+            };
+        }
+
+        const hashedPassword = await bamMatKhau(newPassword);
+        user.matKhau = hashedPassword;
+        await user.save();
+
+        return {
+            EM: 'Cập nhật mật khẩu thành công!',
+            EC: 0
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: []
+        };
+    }
+};
+
 module.exports = {
     layTatCaNguoiDung,
     layNguoiDungTheoTrang,
     taoNguoiDung,
     capNhatTTNguoiDung,
-    xoaNguoiDungBangId
+    xoaNguoiDungBangId,
+    doiMatKhau
 }

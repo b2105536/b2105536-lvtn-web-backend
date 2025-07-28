@@ -139,5 +139,6 @@ module.exports = {
     dangNhapTaiKhoan,
     sdtTonTaiKhong,
     emailTonTaiKhong,
-    bamMatKhau
+    bamMatKhau,
+    kiemTraMatKhau
 }

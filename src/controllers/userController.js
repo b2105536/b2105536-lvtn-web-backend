@@ -134,10 +134,33 @@ const getUserAccount = async (req, res) => {
     });
 }
 
+const handleChangePassword = async (req, res) => {
+    try {
+        const userEmail = req.user.email;
+        const { oldPassword, newPassword } = req.body;
+
+        const data = await userApiService.doiMatKhau(userEmail, oldPassword, newPassword);
+        
+        return res.status(200).json({
+            EM: data.EM, // error message
+            EC: data.EC, // error code
+            DT: '' // data
+        });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            EM: 'error from server', // error message
+            EC: '-1', // error code
+            DT: '' // data
+        });
+    }
+};
+
 module.exports = {
     readFunc,
     createFunc,
     updateFunc,
     deleteFunc,
-    getUserAccount
+    getUserAccount,
+    handleChangePassword
 }
