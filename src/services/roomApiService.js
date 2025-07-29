@@ -1,5 +1,5 @@
 const db = require('../models/index');
-const { Op } = require('sequelize');
+const { Sequelize, Op } = require('sequelize');
 
 const layTatCaMa = async (typeInput) => {
     try {
@@ -63,7 +63,7 @@ const layTatCaPhong = async () => {
     }
 }
 
-const layPhongTheoTrang = async (page, limit, nhaId, ttPhongId, giaThueTu, giaThueDen) => {
+const layPhongTheoTrang = async (page, limit, nhaId, ttPhongId, giaThueTu, giaThueDen, dienTichTu, dienTichDen, sucChua, coGacXep) => {
     try {
         let offset = (page - 1) * limit;
         let whereClause = {};
@@ -81,13 +81,27 @@ const layPhongTheoTrang = async (page, limit, nhaId, ttPhongId, giaThueTu, giaTh
                 [Op.between]: [Number(giaThueTu), Number(giaThueDen)]
             };
         } else if (giaThueTu) {
-            whereClause.giaThue = {
-                [Op.gte]: Number(giaThueTu)
-            };
+            whereClause.giaThue = { [Op.gte]: Number(giaThueTu) };
         } else if (giaThueDen) {
-            whereClause.giaThue = {
-                [Op.lte]: Number(giaThueDen)
+            whereClause.giaThue = { [Op.lte]: Number(giaThueDen) };
+        }
+
+        if (dienTichTu && dienTichDen) {
+            whereClause.dienTich = {
+                [Op.between]: [Number(dienTichTu), Number(dienTichDen)]
             };
+        } else if (dienTichTu) {
+            whereClause.dienTich = { [Op.gte]: Number(dienTichTu) };
+        } else if (dienTichDen) {
+            whereClause.dienTich = { [Op.lte]: Number(dienTichDen) };
+        }
+
+        if (sucChua && sucChua !== 'ALL') {
+            whereClause.sucChua = +sucChua;
+        }
+
+        if (coGacXep && coGacXep !== 'ALL') {
+            whereClause.coGacXep = coGacXep === 'true';
         }
 
         const { count, rows } = await db.Phong.findAndCountAll({
@@ -263,6 +277,58 @@ const layKhoangGia = async () => {
     }
 }
 
+const layKhoangDienTich = async () => {
+    try {
+        let ranges = [
+            { id: 1, label: '≤ 10 m²', dienTichTu: 0, dienTichDen: 10 },
+            { id: 2, label: '11 - 15 m²', dienTichTu: 11, dienTichDen: 15 },
+            { id: 3, label: '16 - 20 m²', dienTichTu: 16, dienTichDen: 20 },
+            { id: 4, label: '21 - 25 m²', dienTichTu: 21, dienTichDen: 25 },
+            { id: 5, label: '26 - 30 m²', dienTichTu: 26, dienTichDen: 30 },
+            { id: 6, label: '> 30 m²', dienTichTu: 31, dienTichDen: null },
+        ];
+        
+        return {
+            EM: 'Lấy danh sách khoảng diện tích thành công! (Get list of area ranges successfully)',
+            EC: 0,
+            DT: ranges
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
+const laySucChua = async () => {
+    try {
+        let data = await db.Phong.findAll({
+            attributes: [
+                [Sequelize.fn('DISTINCT', Sequelize.col('sucChua')), 'sucChua']
+            ],
+            order: [['sucChua', 'ASC']]
+        });
+
+        const result = data.map(item => item.get('sucChua'));
+        
+        return {
+            EM: 'Lấy dữ liệu thành công! (Get data successfully)',
+            EC: 0,
+            DT: result
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
 module.exports = {
     layTatCaMa,
     layTatCaPhong,
@@ -271,5 +337,7 @@ module.exports = {
     capNhatTTPhong,
     xoaPhongBangId,
     layNhaTro,
-    layKhoangGia
+    layKhoangGia,
+    layKhoangDienTich,
+    laySucChua
 }

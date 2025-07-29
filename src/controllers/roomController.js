@@ -20,11 +20,11 @@ const getAllCode = async (req, res) => {
 
 const readFunc = async (req, res) => {
     try {
-        let { page, limit, nhaId, ttPhongId, giaThueTu, giaThueDen } = req.query;
+        let { page, limit, nhaId, ttPhongId, giaThueTu, giaThueDen, dienTichTu, dienTichDen, sucChua, coGacXep } = req.query;
 
         if (page && limit && nhaId) {
             let data = await roomApiService.layPhongTheoTrang(
-                +page, +limit, nhaId, ttPhongId, giaThueTu, giaThueDen
+                +page, +limit, nhaId, ttPhongId, giaThueTu, giaThueDen, dienTichTu, dienTichDen, sucChua, coGacXep
             );
 
             return res.status(200).json({
@@ -148,7 +148,7 @@ const getRoomStatuses = async (req, res) => {
             DT: '' // data
         });
     }
-};
+}
 
 const getRentRanges = async (req, res) => {
     try {
@@ -166,7 +166,43 @@ const getRentRanges = async (req, res) => {
             DT: '' // data
         });
     }
-};
+}
+
+const getAreaRanges = async (req, res) => {
+    try {
+        const data = await roomApiService.layKhoangDienTich();
+        return res.status(200).json({
+            EM: data.EM,
+            EC: data.EC,
+            DT: data.DT
+        });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            EM: 'error from server', // error message
+            EC: '-1', // error code
+            DT: '' // data
+        });
+    }
+}
+
+const getCapacities = async (req, res) => {
+    try {
+        const data = await roomApiService.laySucChua();
+        return res.status(200).json({
+            EM: data.EM,
+            EC: data.EC,
+            DT: data.DT
+        });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            EM: 'error from server', // error message
+            EC: '-1', // error code
+            DT: '' // data
+        });
+    }
+}
 
 module.exports = {
     getAllCode,
@@ -176,5 +212,7 @@ module.exports = {
     deleteFunc,
     houseReadFunction,
     getRoomStatuses,
-    getRentRanges
+    getRentRanges,
+    getAreaRanges,
+    getCapacities
 }

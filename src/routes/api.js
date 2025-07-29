@@ -16,7 +16,9 @@ const { getAllCode,
         deleteFunc: roomDeleteFunc, 
         houseReadFunction,
         getRoomStatuses,
-        getRentRanges} = require('../controllers/roomController');
+        getRentRanges,
+        getAreaRanges,
+        getCapacities} = require('../controllers/roomController');
 const { readFunc: roleReadFunc,
         createFunc: roleCreateFunc,
         updateFunc: roleUpdateFunc,
@@ -87,6 +89,8 @@ router.delete('/room/delete', roomDeleteFunc);
 router.get('/room/house-read', houseReadFunction);
 router.get('/allcode/stat-rooms', getRoomStatuses);
 router.get('/room/rent-range', getRentRanges);
+router.get('/room/area-range', getAreaRanges);
+router.get('/room/get-capacities', getCapacities);
 
 // Role routes
 router.get('/role/read', roleReadFunc);
