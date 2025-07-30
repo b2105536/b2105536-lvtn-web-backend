@@ -2,7 +2,7 @@ const express = require('express');
 const { homeGetHouse } = require('../controllers/homeApiController');
 const { handleRegister, handleLogin, handleLogout } = require('../controllers/apiController');
 const { countUsersByGroup, countStudentsByGender, countHousesByDistrict, countHousesByOwner } = require('../controllers/dashboardController');
-const { readFunc, createFunc, updateFunc, deleteFunc, getUserAccount, handleChangePassword } = require('../controllers/userController');
+const { readFunc, createFunc, updateFunc, deleteFunc, getUserAccount, handleChangePassword, getUserAccountInfo, updateUserAccountInfo } = require('../controllers/userController');
 const { readFunc: houseReadFunc,
         createFunc: houseCreateFunc,
         updateFunc: houseUpdateFunc,
@@ -106,7 +106,6 @@ router.get('/group/read', groupReadFunc);
 // Management routes
 router.get('/manage/house-by-email', getHousesByEmail);
 router.get('/manage/room-by-house', getRoomsByHouse);
-// router.get('/manage/student/read', mngStudentReadFunc);
 router.post('/manage/student/create', mngStudentCreateFunc);
 router.delete('/manage/student/delete', mngStudentDeleteFunc);
 
@@ -131,5 +130,9 @@ router.post('/payment/zalopay/create-order', paymentCreateOrderFunc);
 
 router.get('/invoice/read', getInvoiceByEmail);
 router.get('/invoice/:id', getDetailInvoice);
+
+// Account routes
+router.get('/my-account/info', getUserAccountInfo);
+router.put('/my-account/update', updateUserAccountInfo);
 
 module.exports = router;

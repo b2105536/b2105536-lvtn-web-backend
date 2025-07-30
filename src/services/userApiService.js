@@ -231,7 +231,100 @@ const doiMatKhau = async (email, oldPassword, newPassword) => {
             DT: []
         };
     }
-};
+}
+
+const layTTNguoiDung = async (email) => {
+    try {
+        if (!email) {
+            return {
+                EM: 'Không tìm thấy người dùng với email này.',
+                EC: 1,
+                DT: null
+            };
+        }
+
+        const data = await db.NguoiDung.findOne({
+            where: { email },
+            attributes: ['id', 'soDienThoai', 'hoTen', 'email', 'soDD', 'ngaySinh', 'gioiTinh', 'anhDD', 'dcThuongTru']
+        });
+
+        if (!data) {
+            return {
+                EM: 'Không tìm thấy người dùng! (User not found)',
+                EC: 1,
+                DT: null
+            };
+        }
+
+        return {
+            EM: 'Lấy thông tin người dùng thành công! (Get user info successfully)',
+            EC: 0,
+            DT: data
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
+const capNhatNguoiDung = async (data) => {
+    try {
+        if (!data.email) {
+            return {
+                EM: 'Email không được để trống',
+                EC: 1,
+                DT: null
+            };
+        }
+
+        if (!data.hoTen || data.hoTen.trim() === "") {
+            return {
+                EM: 'Họ tên không được để trống',
+                EC: 1,
+                DT: null
+            };
+        }
+
+        let user = await db.NguoiDung.findOne({ where: { email: data.email } });
+        if (!user) {
+            return {
+                EM: 'Người dùng không tồn tại',
+                EC: 1,
+                DT: null
+            };
+        }
+
+        user.hoTen = data.hoTen || user.hoTen;
+        user.soDD = data.soDD || user.soDD;
+        user.gioiTinh = data.gioiTinh;
+        user.ngaySinh = data.ngaySinh || user.ngaySinh;
+        user.dcThuongTru = data.dcThuongTru || user.dcThuongTru;
+
+        if (data.anhDD && data.anhDD.startsWith('data:image')) {
+            user.anhDD = data.anhDD;
+        }
+
+        await user.save();
+
+        return {
+            EM: 'Cập nhật thông tin thành công! (Infomation updated successfully)',
+            EC: 0,
+            DT: null
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
 
 module.exports = {
     layTatCaNguoiDung,
@@ -239,5 +332,7 @@ module.exports = {
     taoNguoiDung,
     capNhatTTNguoiDung,
     xoaNguoiDungBangId,
-    doiMatKhau
+    doiMatKhau,
+    layTTNguoiDung,
+    capNhatNguoiDung
 }

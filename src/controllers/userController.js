@@ -154,7 +154,45 @@ const handleChangePassword = async (req, res) => {
             DT: '' // data
         });
     }
-};
+}
+
+const getUserAccountInfo = async (req, res) => {
+    try {
+        const email = req.user?.email || req.query?.email;
+        const data = await userApiService.layTTNguoiDung(email);
+
+        return res.status(200).json({
+            EM: data.EM,
+            EC: data.EC,
+            DT: data.DT
+        });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            EM: 'error from server', // error message
+            EC: '-1', // error code
+            DT: '' // data
+        });
+    }
+}
+
+const updateUserAccountInfo = async (req, res) => {
+    try {
+        const data = await userApiService.capNhatNguoiDung(req.body);
+        return res.status(200).json({
+            EM: data.EM,
+            EC: data.EC,
+            DT: data.DT
+        });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            EM: 'error from server', // error message
+            EC: '-1', // error code
+            DT: '' // data
+        });
+    }
+}
 
 module.exports = {
     readFunc,
@@ -162,5 +200,7 @@ module.exports = {
     updateFunc,
     deleteFunc,
     getUserAccount,
-    handleChangePassword
+    handleChangePassword,
+    getUserAccountInfo,
+    updateUserAccountInfo
 }
