@@ -4,7 +4,7 @@ const { sdtTonTaiKhong, emailTonTaiKhong, bamMatKhau, kiemTraMatKhau } = require
 const layTatCaNguoiDung = async () => {
     try {
         let cacNguoiDung = await db.NguoiDung.findAll({
-            attributes: ["id", "soDienThoai", "hoTen", "email", "soDD", "gioiTinh", "ngaySinh", "dcThuongTru"],
+            attributes: ["id", "soDienThoai", "hoTen", "email", "soDD", "gioiTinh", "ngaySinh", "dcThuongTru", "anhDD"],
             include: { model: db.NhomND, attributes: ["tenNhom"] }
         });
         if (cacNguoiDung) {
@@ -43,7 +43,7 @@ const layNguoiDungTheoTrang = async (page, limit, nhomId) => {
             offset: offset,
             limit: limit,
             where: whereClause,
-            attributes: ["id", "soDienThoai", "hoTen", "email", "soDD", "gioiTinh", "ngaySinh", "dcThuongTru"],
+            attributes: ["id", "soDienThoai", "hoTen", "email", "soDD", "gioiTinh", "ngaySinh", "dcThuongTru", "anhDD"],
             include: { model: db.NhomND, attributes: ["id", "tenNhom"] },
             order: [['id', 'DESC']]
         });
