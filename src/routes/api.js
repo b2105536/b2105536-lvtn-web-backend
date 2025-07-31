@@ -42,7 +42,8 @@ const { getHousesByEmail,
         getInvoiceInfo,
         getShowInvoiceInfo,
         getInvoiceByContract,
-        updateInvoice } = require('../controllers/manageController');
+        updateInvoice, 
+        getListInvoices} = require('../controllers/manageController');
 const { checkUserJWT, checkUserPermission } = require('../middleware/JWTAction');
 const { paymentReadFunc, paymentCreateOrderFunc, paymentCallbackFunc, getInvoiceByEmail, getDetailInvoice } = require('../controllers/paymentController');
 const router = express.Router();
@@ -123,6 +124,8 @@ router.post('/manage/invoice/create', createInvoice);
 router.get('/manage/invoice/show/:hopDongId', getShowInvoiceInfo);
 router.get('/manage/invoice/read/:hopDongId', getInvoiceByContract);
 router.post('/manage/invoice/update', updateInvoice);
+
+router.get('/manage/revenue/list-invoices', getListInvoices);
 
 // Other routes
 router.get('/payment/info-by-email', paymentReadFunc);

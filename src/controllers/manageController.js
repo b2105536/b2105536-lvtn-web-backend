@@ -27,7 +27,7 @@ const getHousesByEmail = async (req, res) => {
             DT: '' // data
         });
     }
-};
+}
 
 const getRoomsByHouse = async (req, res) => {
     try {
@@ -71,7 +71,7 @@ const createFunc = async (req, res) => {
             DT: '' // data
         });
     }
-};
+}
 
 const deleteFunc = async (req, res) => {
     try {
@@ -243,6 +243,7 @@ const assignServiceToContract = async (req, res) => {
     }
 }
 
+// Giấy báo
 const createInvoice = async (req, res) => {
     try {
         let data = await manageApiService.taoHoaDon(req.body.data);
@@ -352,6 +353,47 @@ const updateInvoice = async (req, res) => {
     }
 }
 
+// Doanh thu:
+const getListInvoices = async (req, res) => {
+    try {
+        let houseId = req.query.houseId;
+
+        if (!houseId) {
+            return res.status(400).json({
+                EM: 'Thiếu mã nhà trọ.',
+                EC: 1,
+                DT: ''
+            });
+        }
+
+        if (req.query.page && req.query.limit) {
+            let page = req.query.page;
+            let limit = req.query.limit;
+
+            let data = await manageApiService.layDSHoaDonTheoTrang(houseId, +page, +limit);
+            return res.status(200).json({
+                EM: data.EM,
+                EC: data.EC,
+                DT: data.DT
+            });
+        } else {
+            const data = await manageApiService.layDSHoaDonTheoNha(houseId);
+            return res.status(200).json({
+                EM: data.EM,
+                EC: data.EC,
+                DT: data.DT
+            });
+        }
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            EM: 'error from server',
+            EC: '-1',
+            DT: ''
+        });
+    }
+}
+
 module.exports = {
     getHousesByEmail,
     getRoomsByHouse,
@@ -368,5 +410,6 @@ module.exports = {
     getInvoiceInfo,
     getShowInvoiceInfo,
     getInvoiceByContract,
-    updateInvoice
+    updateInvoice,
+    getListInvoices
 }

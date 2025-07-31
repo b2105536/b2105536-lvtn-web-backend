@@ -35,7 +35,7 @@ const layTatCaNhaTheoChuSoHuu = async (email) => {
             DT: []
         };
     }
-};
+}
 
 const layPhongTheoNha = async (nhaId) => {
     try {
@@ -184,7 +184,7 @@ const taoHoacThemHopDongKhach = async (data) => {
             DT: null
         };
     }
-};
+}
 
 const xoaHopDongBangId = async (hopDongId, phongId) => {
     try {
@@ -521,7 +521,7 @@ const layGiaHienTai = async (dichVuId) => {
     });
 
     return Number(gia?.donGia) || 0;
-};
+}
 
 const taoHoaDon = async (data) => {
     try {
@@ -863,6 +863,160 @@ const capNhatHoaDon = async (data) => {
     }
 }
 
+// Doanh thu
+const layDSHoaDonTheoNha = async (houseId) => {
+    try {
+        const cacPhong = await db.Phong.findAll({
+            where: { nhaId: houseId },
+            attributes: ['id']
+        });
+
+        const phongIds = cacPhong.map(p => p.id);
+        
+        if (phongIds.length === 0) {
+            return {
+                EC: 0,
+                EM: 'Nhà trọ này không có phòng nào.',
+                DT: []
+            };
+        }
+
+        const cacHopDong = await db.HopDong.findAll({
+            where: { phongId: phongIds },
+            attributes: ['id'],
+        });
+
+        const hopDongIds = cacHopDong.map(hd => hd.id);
+
+        if (hopDongIds.length === 0) {
+            return {
+                EC: 0,
+                EM: 'Không có hợp đồng nào.',
+                DT: []
+            };
+        }
+
+        const cacHoaDon = await db.HoaDon.findAll({
+            where: { hopDongId: hopDongIds },
+            include: [
+                {
+                    model: db.HopDong,
+                    include: [
+                        {
+                            model: db.Phong,
+                            attributes: ['tenPhong']
+                        },
+                        {
+                            model: db.NguoiDung,
+                            attributes: ['hoTen']
+                        }
+                    ]
+                }
+            ],
+            order: [['ngayTao', 'DESC']]
+        });
+
+        return {
+            EC: 0,
+            EM: 'Lấy danh sách hóa đơn thành công! (Get invoice list successfully)',
+            DT: cacHoaDon
+        };
+
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
+const layDSHoaDonTheoTrang = async (houseId, page, limit) => {
+    try {
+        let offset = (page - 1) * limit;
+
+        const cacPhong = await db.Phong.findAll({
+            where: { nhaId: houseId },
+            attributes: ['id']
+        });
+
+        const phongIds = cacPhong.map(p => p.id);
+
+        if (phongIds.length === 0) {
+            return {
+                EC: 0,
+                EM: 'Nhà trọ này không có phòng nào.',
+                DT: {
+                    totalRows: 0,
+                    totalPages: 0,
+                    invoices: []
+                }
+            };
+        }
+
+        const cacHopDong = await db.HopDong.findAll({
+            where: { phongId: phongIds },
+            attributes: ['id']
+        });
+
+        const hopDongIds = cacHopDong.map(hd => hd.id);
+
+        if (hopDongIds.length === 0) {
+            return {
+                EC: 0,
+                EM: 'Không có hợp đồng nào.',
+                DT: {
+                    totalRows: 0,
+                    totalPages: 0,
+                    invoices: []
+                }
+            };
+        }
+
+        const { count, rows } = await db.HoaDon.findAndCountAll({
+            where: { hopDongId: hopDongIds },
+            include: [
+                {
+                    model: db.HopDong,
+                    include: [
+                        {
+                            model: db.Phong,
+                            attributes: ['tenPhong']
+                        },
+                        {
+                            model: db.NguoiDung,
+                            attributes: ['hoTen']
+                        }
+                    ]
+                }
+            ],
+            order: [['ngayTao', 'DESC']],
+            offset: offset,
+            limit: limit
+        });
+        let totalPages = Math.ceil(count / limit);
+        let data = {
+            totalRows: count,
+            totalPages: totalPages,
+            invoices: rows
+        };
+
+        return {
+            EM: 'Lấy danh sách hóa đơn thành công! (Get invoice list successfully)',
+            EC: 0,
+            DT: data
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
 module.exports = {
     layTatCaNhaTheoChuSoHuu,
     layPhongTheoNha,
@@ -880,5 +1034,7 @@ module.exports = {
     layThongTinHoaDon,
     layThongTinGiayBao,
     layHoaDonTheoHopDong,
-    capNhatHoaDon
+    capNhatHoaDon,
+    layDSHoaDonTheoNha,
+    layDSHoaDonTheoTrang
 }
