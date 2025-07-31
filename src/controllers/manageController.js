@@ -394,6 +394,34 @@ const getListInvoices = async (req, res) => {
     }
 }
 
+const getRevenueChart = async (req, res) => {
+    try {
+        const { houseId, type } = req.query;
+
+        if (!houseId || !type) {
+            return res.status(400).json({
+                EM: 'Missing required params.',
+                EC: 1,
+                DT: ''
+            });
+        }
+
+        const data = await manageApiService.layDoanhThuTheoThoiGian(houseId, type);
+        return res.status(200).json({
+            EM: data.EM,
+            EC: data.EC,
+            DT: data.DT
+        });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            EM: 'error from server',
+            EC: '-1',
+            DT: ''
+        });
+    }
+}
+
 module.exports = {
     getHousesByEmail,
     getRoomsByHouse,
@@ -411,5 +439,6 @@ module.exports = {
     getShowInvoiceInfo,
     getInvoiceByContract,
     updateInvoice,
-    getListInvoices
+    getListInvoices,
+    getRevenueChart
 }

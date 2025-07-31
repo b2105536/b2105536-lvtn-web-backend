@@ -1,4 +1,6 @@
 const db = require('../models/index');
+const { Op } = require('sequelize');
+const moment = require('moment-timezone');
 
 // Khách thuê
 const layTatCaNhaTheoChuSoHuu = async (email) => {
@@ -1017,6 +1019,116 @@ const layDSHoaDonTheoTrang = async (houseId, page, limit) => {
     }
 }
 
+const layDoanhThuTheoThoiGian = async (houseId, type) => {
+    try {
+        const cacPhong = await db.Phong.findAll({
+            where: { nhaId: houseId },
+            attributes: ['id']
+        });
+
+        const phongIds = cacPhong.map(p => p.id);
+        if (phongIds.length === 0) return {
+            EM: 'Nhà trọ này không có phòng nào.',
+            EC: 0,
+            DT: { labels: [], data: [] }
+        };
+
+        const cacHopDong = await db.HopDong.findAll({
+            where: { phongId: phongIds },
+            attributes: ['id']
+        });
+
+        const hopDongIds = cacHopDong.map(hd => hd.id);
+        if (hopDongIds.length === 0) return {
+            EM: 'Không có hợp đồng nào.',
+            EC: 0,
+            DT: { labels: [], data: [] }
+        };
+
+        let groupFormat, labelFormat;
+        switch (type) {
+            case 'day':
+                groupFormat = '%Y-%m-%d';
+                labelFormat = 'YYYY-MM-DD';
+                break;
+            case 'week':
+                groupFormat = '%Y-%u'; // %u: ISO week number
+                labelFormat = 'YYYY-[W]WW';
+                break;
+            case 'month':
+                groupFormat = '%Y-%m';
+                labelFormat = 'YYYY-MM';
+                break;
+            case 'year':
+                groupFormat = '%Y';
+                labelFormat = 'YYYY';
+                break;
+            default:
+                return {
+                    EM: 'Không có loại thời gian nào.',
+                    EC: 0,
+                    DT: { labels: [], data: [] }
+                };
+        }
+
+        const doanhThu = await db.HoaDon.findAll({
+            attributes: ['ngayTao', 'soTienDaTra'],
+            where: {
+                hopDongId: hopDongIds,
+                soTienDaTra: { [Op.gt]: 0 }
+            },
+            order: [['ngayTao', 'ASC']]
+        });
+
+        const groupMap = new Map();
+
+        doanhThu.forEach(entry => {
+            const date = moment.tz(entry.get('ngayTao'), 'Asia/Ho_Chi_Minh');
+
+            let key;
+            switch (type) {
+                case 'day':
+                    key = date.format('YYYY-MM-DD');
+                    break;
+                case 'week':
+                    key = date.format('YYYY-[W]WW');
+                    break;
+                case 'month':
+                    key = date.format('YYYY-MM');
+                    break;
+                case 'year':
+                    key = date.format('YYYY');
+                    break;
+                default:
+                    key = 'unknown';
+            }
+
+            const prev = groupMap.get(key) || 0;
+            groupMap.set(key, prev + Number(entry.get('soTienDaTra')));
+        });
+
+        const sortedEntries = Array.from(groupMap.entries()).sort(
+            ([a], [b]) => moment(a).toDate() - moment(b).toDate()
+        );
+
+        const labels = sortedEntries.map(([key]) => key);
+        const data = sortedEntries.map(([, value]) => value);
+
+        return {
+            EM: 'Lấy dữ liệu doanh thu thành công. (Get revenue data successfully)',
+            EC: 0,
+            DT: { labels, data }
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: { labels: [], data: [] }
+        };
+    }
+}
+
 module.exports = {
     layTatCaNhaTheoChuSoHuu,
     layPhongTheoNha,
@@ -1036,5 +1148,6 @@ module.exports = {
     layHoaDonTheoHopDong,
     capNhatHoaDon,
     layDSHoaDonTheoNha,
-    layDSHoaDonTheoTrang
+    layDSHoaDonTheoTrang,
+    layDoanhThuTheoThoiGian
 }
