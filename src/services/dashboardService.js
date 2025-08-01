@@ -1,4 +1,5 @@
 const db = require('../models/index');
+const { Op, fn, col, literal } = require("sequelize");
 
 const laySoLuongNguoiDungTheoNhom = async () => {
     try {
@@ -114,9 +115,133 @@ const laySoLuongNhaTroTheoChuSoHuu = async () => {
     }
 };
 
+const thongKeDoanhThuTatCaNhaTro = async (filter) => {
+    try {
+        let { nhaId, type = 'month', fromDate, toDate } = filter;
+
+        let formatKey;
+        switch (type) {
+            case 'day':
+                formatKey = '%Y-%m-%d';
+                break;
+            case 'week':
+                formatKey = '%Y-%u';
+                break;
+            case 'month':
+                formatKey = '%Y-%m';
+                break;
+            case 'year':
+                formatKey = '%Y';
+                break;
+            default:
+                formatKey = '%Y-%m';
+        }
+
+        let phongWhere = {};
+        if (nhaId) phongWhere.nhaId = nhaId;
+
+        const phongList = await db.Phong.findAll({
+            where: phongWhere,
+            attributes: ['id']
+        });
+
+        const phongIds = phongList.map(p => p.id);
+        if (phongIds.length === 0) return {
+            EM: 'Không có phòng phù hợp.',
+            EC: 0,
+            DT: { labels: [], data: [] }
+        };
+
+        const hopDongList = await db.HopDong.findAll({
+            where: { phongId: phongIds },
+            attributes: ['id']
+        });
+
+        const hopDongIds = hopDongList.map(hd => hd.id);
+        if (hopDongIds.length === 0) return {
+            EM: 'Không có hợp đồng phù hợp.',
+            EC: 0,
+            DT: { labels: [], data: [] }
+        };
+
+        let dateCondition = {};
+        if (fromDate && toDate) {
+            let offsetMs = 7 * 60 * 60 * 1000;
+            let fromUTC = new Date(new Date(fromDate).getTime() - offsetMs);
+            let toUTC = new Date(new Date(toDate).getTime() - offsetMs);
+
+            dateCondition = {
+                ngayTao: {
+                    [Op.between]: [fromUTC, toUTC]
+                }
+            };
+        }
+
+        let timeGroupExpr = `DATE_FORMAT(CONVERT_TZ(ngayTao, '+00:00', '+07:00'), '${formatKey}')`;
+
+        const doanhThuList = await db.HoaDon.findAll({
+            attributes: [
+                [literal(timeGroupExpr), 'thoiGian'],
+                [fn('SUM', col('soTienDaTra')), 'tongTien']
+            ],
+            where: {
+                ...dateCondition,
+                hopDongId: hopDongIds,
+                soTienDaTra: { [Op.gt]: 0 }
+            },
+            group: [literal(timeGroupExpr)],
+            order: [[literal(timeGroupExpr), 'ASC']]
+        });
+
+        let rawLabels = doanhThuList.map(item => item.get('thoiGian'));
+        let data = doanhThuList.map(item => Number(item.get('tongTien')));
+
+        let labels = [];
+        switch (type) {
+            case 'day':
+                labels = rawLabels.map(label => {
+                    let [y, m, d] = label.split('-');
+                    return `${d}-${m}-${y}`;
+                });
+                break;
+            case 'week':
+                labels = rawLabels.map(label => {
+                    let [y, w] = label.split('-');
+                    return `T${w}-${y}`;
+                });
+                break;
+            case 'month':
+                labels = rawLabels.map(label => {
+                    let [y, m] = label.split('-');
+                    return `${m}-${y}`;
+                });
+                break;
+            case 'year':
+                labels = rawLabels;
+                break;
+            default:
+                labels = rawLabels;
+        }
+
+        return {
+            EM: 'Thống kê doanh thu thành công. (Get revenue statistics successfully)',
+            EC: 0,
+            DT: { labels, data }
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: { labels: [], data: [] }
+        };
+    }
+};
+
 module.exports = {
     laySoLuongNguoiDungTheoNhom,
     thongKeSinhVienTheoGioiTinh,
     laySoLuongNhaTroTheoHuyen,
-    laySoLuongNhaTroTheoChuSoHuu
+    laySoLuongNhaTroTheoChuSoHuu,
+    thongKeDoanhThuTatCaNhaTro
 }

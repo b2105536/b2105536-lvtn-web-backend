@@ -1,7 +1,7 @@
 const express = require('express');
 const { homeGetHouse } = require('../controllers/homeApiController');
 const { handleRegister, handleLogin, handleLogout } = require('../controllers/apiController');
-const { countUsersByGroup, countStudentsByGender, countHousesByDistrict, countHousesByOwner } = require('../controllers/dashboardController');
+const { countUsersByGroup, countStudentsByGender, countHousesByDistrict, countHousesByOwner, revenueStatistics } = require('../controllers/dashboardController');
 const { readFunc, createFunc, updateFunc, deleteFunc, getUserAccount, handleChangePassword, getUserAccountInfo, updateUserAccountInfo } = require('../controllers/userController');
 const { readFunc: houseReadFunc,
         createFunc: houseCreateFunc,
@@ -64,6 +64,7 @@ router.get('/dashboard/user-stats-by-group', countUsersByGroup);
 router.get('/dashboard/student-stats-by-gender', countStudentsByGender);
 router.get('/dashboard/house-stats-by-district', countHousesByDistrict);
 router.get('/dashboard/house-stats-by-owner', countHousesByOwner);
+router.get('/dashboard/revenue-statistics', revenueStatistics);
 
 // User routes
 router.get('/user/read', readFunc);
