@@ -422,6 +422,45 @@ const getRevenueChart = async (req, res) => {
     }
 }
 
+// Phòng:
+const updateRoomNamePrice = async (req, res) => {
+    try {
+        const result = await manageApiService.capNhatTenGiaPhong(req.body);
+        return res.status(200).json({
+            EM: result.EM,
+            EC: result.EC,
+            DT: result.DT
+        });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            EM: 'error from server',
+            EC: '-1',
+            DT: ''
+        });
+    }
+}
+
+const getStudentInfo = async (req, res) => {
+    try {
+        const { phongId } = req.query;
+
+        let data = await manageApiService.layThongTinSinhVien(phongId);
+        return res.status(200).json({
+            EM: data.EM,
+            EC: data.EC,
+            DT: data.DT
+        });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            EM: 'error from server',
+            EC: '-1',
+            DT: ''
+        });
+    }
+}
+
 module.exports = {
     getHousesByEmail,
     getRoomsByHouse,
@@ -440,5 +479,7 @@ module.exports = {
     getInvoiceByContract,
     updateInvoice,
     getListInvoices,
-    getRevenueChart
+    getRevenueChart,
+    updateRoomNamePrice,
+    getStudentInfo
 }

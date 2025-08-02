@@ -201,7 +201,6 @@ const xoaHopDongBangId = async (hopDongId, phongId) => {
                 DT: null
             };
         }
-
         
         await db.HopDong.destroy({ where: { id: hopDongId } });
 
@@ -1129,6 +1128,103 @@ const layDoanhThuTheoThoiGian = async (houseId, type) => {
     }
 }
 
+// Phòng:
+const capNhatTenGiaPhong = async (data) => {
+    try {
+        if (!data.id || !data.tenPhong || !data.giaThue) {
+            return {
+                EM: 'Thiếu thông tin bắt buộc. (Missing required parameters)',
+                EC: 1,
+                DT: ''
+            };
+        }
+
+        let phong = await db.Phong.findOne({
+            where: { id: data.id }
+        });
+
+        if (phong) {
+            await phong.update({
+                tenPhong: data.tenPhong,
+                giaThue: data.giaThue
+            });
+
+            return {
+                EM: 'Cập nhật thông tin phòng thành công! (Room info updated successfully)',
+                EC: 0,
+                DT: ''
+            };
+        } else {
+            return {
+                EM: 'Không tìm thấy phòng. (Room not found)',
+                EC: 2,
+                DT: ''
+            };
+        }
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong)',
+            EC: 1,
+            DT: ''
+        };
+    }
+}
+
+const layThongTinSinhVien = async (phongId) => {
+    try {
+        if (!phongId) {
+            return {
+                EM: 'Thiếu phongId (Missing phongId)',
+                EC: 1,
+                DT: []
+            };
+        }
+
+        const phong = await db.Phong.findOne({
+            where: { id: phongId },
+            attributes: ['id', 'tenPhong'],
+            include: [
+                {
+                    model: db.HopDong,
+                    where: { ngayKT: null },
+                    required: false,
+                    include: [
+                        {
+                            model: db.NguoiDung,
+                            attributes: ['id', 'hoTen', 'soDienThoai', 'email', 'soDD', 'gioiTinh', 'ngaySinh', 'dcThuongTru']
+                        }
+                    ]
+                }
+            ]
+        });
+
+        if (!phong) {
+            return {
+                EM: 'Không tìm thấy phòng',
+                EC: 2,
+                DT: []
+            };
+        }
+
+        const hopDong = phong.HopDongs?.[0];
+        const sinhVien = hopDong?.NguoiDung;
+
+        return {
+            EM: sinhVien ? 'Lấy thông tin sinh viên thành công! (Fetched successfully)' : 'Phòng chưa có người thuê',
+            EC: 0,
+            DT: sinhVien
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
 module.exports = {
     layTatCaNhaTheoChuSoHuu,
     layPhongTheoNha,
@@ -1149,5 +1245,7 @@ module.exports = {
     capNhatHoaDon,
     layDSHoaDonTheoNha,
     layDSHoaDonTheoTrang,
-    layDoanhThuTheoThoiGian
+    layDoanhThuTheoThoiGian,
+    capNhatTenGiaPhong,
+    layThongTinSinhVien
 }
