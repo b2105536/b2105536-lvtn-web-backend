@@ -20,7 +20,7 @@ const layTatCaNhaTheoChuSoHuu = async (email) => {
 
         let danhSachNha = await db.Nha.findAll({
             where: { chuTroId: nguoiDung.id },
-            attributes: ['id', 'ten'],
+            attributes: ['id', 'ten', 'moTa'],
             order: [['id', 'DESC']]
         });
 
@@ -1226,6 +1226,46 @@ const layThongTinSinhVien = async (phongId) => {
     }
 }
 
+// Nhà:
+const capNhatTenVaMoTaNha = async (data) => {
+    try {
+        if (!data.id || !data.ten) {
+            return {
+                EM: 'Thiếu mã hoặc tên nhà trọ.',
+                EC: 1,
+                DT: ''
+            };
+        }
+
+        let nhaTro = await db.Nha.findOne({ where: { id: data.id } });
+        if (!nhaTro) {
+            return {
+                EM: 'Không tìm thấy nhà trọ. (House not found)',
+                EC: 2,
+                DT: ''
+            };
+        }
+
+        await nhaTro.update({
+            ten: data.ten,
+            moTa: data.moTa || ''
+        });
+
+        return {
+            EM: 'Cập nhật thông tin thành công. (Info updated successfully)',
+            EC: 0,
+            DT: nhaTro
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong)',
+            EC: 1,
+            DT: ''
+        };
+    }
+}
+
 module.exports = {
     layTatCaNhaTheoChuSoHuu,
     layPhongTheoNha,
@@ -1248,5 +1288,6 @@ module.exports = {
     layDSHoaDonTheoTrang,
     layDoanhThuTheoThoiGian,
     capNhatTenGiaPhong,
-    layThongTinSinhVien
+    layThongTinSinhVien,
+    capNhatTenVaMoTaNha
 }
