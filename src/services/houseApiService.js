@@ -190,21 +190,33 @@ const xoaNhaBangId = async (nhaId) => {
             where: {id: nhaId}
         });
 
-        if (nhaTro) {
-            await nhaTro.destroy();
-
-            return {
-                EM: 'Xóa nhà trọ thành công! (House deleted successfully)',
-                EC: 0,
-                DT: []
-            };
-        } else {
+        if (!nhaTro) {
             return {
                 EM: 'Nhà trọ không tồn tại. (House does not exited)',
                 EC: 2,
                 DT: []
             };
         }
+
+        const soPhong = await db.Phong.count({
+            where: { nhaId: nhaId }
+        });
+
+        if (soPhong > 0) {
+            return {
+                EM: 'Không thể xóa nhà trọ vì còn phòng tồn tại. (Cannot delete house)',
+                EC: 1,
+                DT: []
+            };
+        }
+        
+        await nhaTro.destroy();
+
+        return {
+            EM: 'Xóa nhà trọ thành công! (House deleted successfully)',
+            EC: 0,
+            DT: []
+        };
     } catch (e) {
         console.log(e);
         return {

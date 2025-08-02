@@ -144,20 +144,6 @@ const taoHoacThemHopDongKhach = async (data) => {
             };
         }
 
-        const tonTai = await db.HopDong.findOne({
-            where: {
-                sinhVienId: nguoiDung.id,
-                phongId: data.phongId
-            }
-        });
-        if (tonTai) {
-            return {
-                EM: 'Khách này đã được thêm vào phòng này.',
-                EC: 1,
-                DT: null
-            };
-        }
-
         const newHopDong = await db.HopDong.create({
             ngayLap: new Date(),
             phongId: data.phongId,
@@ -174,7 +160,7 @@ const taoHoacThemHopDongKhach = async (data) => {
         );
 
         return {
-            EM: 'Thêm khách vào phòng thành công!',
+            EM: 'Thêm khách vào phòng thành công! (Student added successfully)',
             EC: 0,
             DT: newHopDong
         };
@@ -188,7 +174,7 @@ const taoHoacThemHopDongKhach = async (data) => {
     }
 }
 
-const xoaHopDongBangId = async (hopDongId, phongId) => {
+const ketThucHopDong = async (hopDongId, phongId) => {
     try {
         let hopDong = await db.HopDong.findOne({
             where: {id: hopDongId}
@@ -202,7 +188,13 @@ const xoaHopDongBangId = async (hopDongId, phongId) => {
             };
         }
         
-        await db.HopDong.destroy({ where: { id: hopDongId } });
+        await db.HopDong.update(
+            {
+                ngayKT: new Date(),
+                ttHopDongId: 10
+            },
+            { where: { id: hopDongId } }
+        );
 
         await db.Phong.update(
             { ttPhongId: 6 },
@@ -210,7 +202,7 @@ const xoaHopDongBangId = async (hopDongId, phongId) => {
         );
 
         return {
-            EM: 'Xóa hợp đồng thành công! (Contract deleted successfully)',
+            EM: 'Kết thúc hợp đồng thành công! (Contract terminated successfully)',
             EC: 0,
             DT: []
         };
@@ -348,30 +340,39 @@ const xoaDichVuBangId = async (id) => {
     try {
         let dichVu = await db.DichVu.findOne({
             where: {id: id},
-            include: {
-                model: db.GiaDichVu,
-            }
+            include: [
+                { model: db.GiaDichVu },
+                { model: db.SuDung }
+            ]
         });
 
-        if (dichVu) {
-            if (dichVu.GiaDichVus && dichVu.GiaDichVus.length > 0) {
-                await db.GiaDichVu.destroy({
-                    where: { dichVuId: id }
-                });
-            }
-
-            await dichVu.destroy();
-
+        if (!dichVu) {
             return {
-                EM: 'Xóa dịch vụ thành công! (Service deleted successfully)',
-                EC: 0,
+                EM: 'Không tìm thấy dịch vụ. (Service not found)',
+                EC: 1,
                 DT: []
             };
         }
-        
+
+        if (dichVu.SuDungs && dichVu.SuDungs.length > 0) {
+            return {
+                EM: 'Dịch vụ đang được sử dụng, không thể xóa. (Service is in use, cannot be deleted)',
+                EC: 1,
+                DT: []
+            };
+        }
+
+        if (dichVu.GiaDichVus && dichVu.GiaDichVus.length > 0) {
+            await db.GiaDichVu.destroy({
+                where: { dichVuId: id }
+            });
+        }
+
+        await dichVu.destroy();
+
         return {
-            EM: 'Không tìm thấy dịch vụ. (Service not found)',
-            EC: 1,
+            EM: 'Xóa dịch vụ thành công! (Service deleted successfully)',
+            EC: 0,
             DT: []
         };
     } catch (e) {
@@ -1229,7 +1230,7 @@ module.exports = {
     layTatCaNhaTheoChuSoHuu,
     layPhongTheoNha,
     taoHoacThemHopDongKhach,
-    xoaHopDongBangId,
+    ketThucHopDong,
     taoDichVu,
     layTatCaDichVu,
     layDichVuTheoTrang,

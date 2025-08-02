@@ -85,7 +85,7 @@ const deleteFunc = async (req, res) => {
             });
         }
 
-        let data = await manageApiService.xoaHopDongBangId(hopDongId, phongId);
+        let data = await manageApiService.ketThucHopDong(hopDongId, phongId);
         return res.status(200).json({
             EM: data.EM, // error message
             EC: data.EC, // error code

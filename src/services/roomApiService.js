@@ -203,24 +203,37 @@ const capNhatTTPhong = async (data) => {
 const xoaPhongBangId = async (roomId) => {
     try {
         let phongTro = await db.Phong.findOne({
-            where: {id: roomId}
+            where: {id: roomId},
+            include: [{
+                model: db.HopDong,
+                where: { ngayKT: null },
+                required: false
+            }]
         });
 
-        if (phongTro) {
-            await phongTro.destroy();
-
-            return {
-                EM: 'Xóa phòng thành công! (Room deleted successfully)',
-                EC: 0,
-                DT: []
-            };
-        } else {
+        if (!phongTro) {
             return {
                 EM: 'Phòng không tồn tại. (Room does not exited)',
                 EC: 2,
                 DT: []
             };
         }
+
+        if (phongTro.HopDongs?.length > 0) {
+            return {
+                EM: 'Phòng đang có hợp đồng thuê, không thể xóa. (Room is under lease, cannot be deleted)',
+                EC: 3,
+                DT: []
+            };
+        }
+        
+        await phongTro.destroy();
+
+        return {
+            EM: 'Xóa phòng thành công! (Room deleted successfully)',
+            EC: 0,
+            DT: []
+        };
     } catch (e) {
         console.log(e);
         return {
