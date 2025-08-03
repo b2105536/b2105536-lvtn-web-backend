@@ -14,8 +14,8 @@ const hostname = process.env.HOST_NAME;
 // Cấu hình cors
 configCors(app);
 
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '10mb' }));
 
 // Cấu hình template engine
 configViewEngine(app);

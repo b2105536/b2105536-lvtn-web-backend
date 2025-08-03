@@ -1237,7 +1237,7 @@ const capNhatTenVaMoTaNha = async (data) => {
             };
         }
 
-        let nhaTro = await db.Nha.findOne({ where: { id: data.id } });
+        const nhaTro = await db.Nha.findOne({ where: { id: data.id } });
         if (!nhaTro) {
             return {
                 EM: 'Không tìm thấy nhà trọ. (House not found)',
@@ -1251,10 +1251,65 @@ const capNhatTenVaMoTaNha = async (data) => {
             moTa: data.moTa || ''
         });
 
+        if (data.images && Array.isArray(data.images)) {
+            const totalImageBytes = data.images.reduce((total, base64) => {
+                const base64Length = base64.length;
+                const sizeInBytes = Math.ceil((base64Length * 3) / 4);
+                return total + sizeInBytes;
+            }, 0);
+
+            const maxTotalBytes = 10 * 1024 * 1024;
+            if (totalImageBytes > maxTotalBytes) {
+                return {
+                    EM: 'Tổng dung lượng ảnh vượt quá giới hạn 10MB. (The total size exceeds 10MB limit)',
+                    EC: 3,
+                    DT: ''
+                };
+            }
+
+            await db.AnhNha.destroy({ where: { nhaId: data.id } });
+
+            const imageRecords = data.images.map(imgBase64 => ({
+                duongDan: imgBase64,
+                nhaId: data.id
+            }));
+            await db.AnhNha.bulkCreate(imageRecords);
+        }
+
         return {
             EM: 'Cập nhật thông tin thành công. (Info updated successfully)',
             EC: 0,
             DT: nhaTro
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong)',
+            EC: 1,
+            DT: ''
+        };
+    }
+}
+
+const layAnhNhaTheoNha = async (houseId) => {
+    try {
+        if (!houseId) {
+            return {
+                EM: 'Thiếu mã nhà trọ.',
+                EC: 1,
+                DT: ''
+            };
+        }
+
+        const images = await db.AnhNha.findAll({
+            where: { nhaId: houseId },
+            attributes: ['id', 'duongDan']
+        });
+
+        return {
+            EM: 'Lấy ảnh thành công. (Get images successfully)',
+            EC: 0,
+            DT: images
         };
     } catch (e) {
         console.log(e);
@@ -1289,5 +1344,6 @@ module.exports = {
     layDoanhThuTheoThoiGian,
     capNhatTenGiaPhong,
     layThongTinSinhVien,
-    capNhatTenVaMoTaNha
+    capNhatTenVaMoTaNha,
+    layAnhNhaTheoNha
 }
