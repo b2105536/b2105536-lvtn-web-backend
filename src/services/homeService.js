@@ -22,6 +22,10 @@ const layTatCaNha = async () => {
                 {
                     model: db.Phong,
                     attributes: ["ttPhongId"]
+                },
+                {
+                    model: db.AnhNha,
+                    attributes: ["duongDan"]
                 }
             ]
         });
