@@ -1,5 +1,5 @@
 const express = require('express');
-const { homeGetHouse } = require('../controllers/homeApiController');
+const { homeGetHouse, homeGetHouseDetail } = require('../controllers/homeApiController');
 const { handleRegister, handleLogin, handleLogout } = require('../controllers/apiController');
 const { countUsersByGroup, countStudentsByGender, countHousesByDistrict, countHousesByOwner, revenueStatistics } = require('../controllers/dashboardController');
 const { readFunc, createFunc, updateFunc, deleteFunc, getUserAccount, handleChangePassword, getUserAccountInfo, updateUserAccountInfo } = require('../controllers/userController');
@@ -54,6 +54,7 @@ const { paymentReadFunc, paymentCreateOrderFunc, paymentCallbackFunc, getInvoice
 const router = express.Router();
 
 router.get('/home/get-house', homeGetHouse);
+router.get('/home/house/house-detail/:id', homeGetHouseDetail);
 router.post('/payment/zalopay/callback', paymentCallbackFunc);
 
 // Restful API('/route', api)

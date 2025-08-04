@@ -62,6 +62,67 @@ const layTatCaNha = async () => {
     }
 }
 
+const layChiTietNha = async (nhaId) => {
+    try {
+        const nha = await db.Nha.findOne({
+            where: { id: nhaId },
+            attributes: ['id', 'ten', 'diaChi', 'moTa'],
+            include: [
+                {
+                    model: db.Xa,
+                    attributes: ["tenXa"],
+                    include: [
+                        {
+                            model: db.Huyen,
+                            attributes: ["tenHuyen"],
+                        },
+                        {
+                            model: db.Tinh,
+                            attributes: ["tenTinh"]
+                        }
+                    ] 
+                },
+                {
+                    model: db.AnhNha,
+                    attributes: ['duongDan']
+                },
+                {
+                    model: db.Phong,
+                    attributes: ['id', 'tenPhong', 'coGacXep', 'giaThue', 'dienTich', 'sucChua', 'ttPhongId'],
+                    include: [
+                        {
+                            model: db.BangMa,
+                            attributes: ['giaTri'],
+                        }
+                    ]
+                }
+            ]
+        });
+
+        if (!nha) {
+            return {
+                EM: 'Không tìm thấy nhà trọ. (House not found)',
+                EC: 1,
+                DT: null
+            };
+        }
+
+        return {
+            EM: 'Lấy chi tiết nhà trọ thành công! (Get house details successfully)',
+            EC: 0,
+            DT: nha
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: null
+        };
+    }
+}
+
 module.exports = {
-    layTatCaNha
+    layTatCaNha,
+    layChiTietNha
 }
