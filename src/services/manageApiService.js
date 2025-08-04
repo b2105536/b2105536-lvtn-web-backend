@@ -1132,7 +1132,7 @@ const layDoanhThuTheoThoiGian = async (houseId, type) => {
 // Phòng:
 const capNhatTenGiaPhong = async (data) => {
     try {
-        if (!data.id || !data.tenPhong || !data.giaThue) {
+        if (!data.id || !data.tenPhong || !data.giaThue || !data.ttPhongId) {
             return {
                 EM: 'Thiếu thông tin bắt buộc. (Missing required parameters)',
                 EC: 1,
@@ -1141,27 +1141,52 @@ const capNhatTenGiaPhong = async (data) => {
         }
 
         let phong = await db.Phong.findOne({
-            where: { id: data.id }
+            where: { id: data.id },
+            include: [
+                {
+                    model: db.HopDong,
+                    where: { ngayKT: null },
+                    required: false
+                }
+            ]
         });
 
-        if (phong) {
-            await phong.update({
-                tenPhong: data.tenPhong,
-                giaThue: data.giaThue
-            });
-
-            return {
-                EM: 'Cập nhật thông tin phòng thành công! (Room info updated successfully)',
-                EC: 0,
-                DT: ''
-            };
-        } else {
+        if (!phong) {
             return {
                 EM: 'Không tìm thấy phòng. (Room not found)',
                 EC: 2,
                 DT: ''
             };
         }
+
+        if (Number(phong.ttPhongId) === 5 || (phong.HopDongs && phong.HopDongs.length > 0)) {
+            return {
+                EM: 'Phòng đang được thuê, không thể thay đổi trạng thái! (Room is rented, status cannot be changed)',
+                EC: 3,
+                DT: ''
+            };
+        }
+
+        const validStatusIds = [6, 7];
+        if (!validStatusIds.includes(Number(data.ttPhongId))) {
+            return {
+                EM: 'Không thể chọn "Đã thuê" khi không có khách thuê. (Cannot set "Rented" when there are no tenants)',
+                EC: 4,
+                DT: ''
+            };
+        }
+
+        await phong.update({
+            tenPhong: data.tenPhong,
+            giaThue: data.giaThue,
+            ttPhongId: data.ttPhongId
+        });
+
+        return {
+            EM: 'Cập nhật thông tin phòng thành công! (Room info updated successfully)',
+            EC: 0,
+            DT: ''
+        };
     } catch (e) {
         console.log(e);
         return {
