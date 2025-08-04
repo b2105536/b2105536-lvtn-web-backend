@@ -1,5 +1,5 @@
 const express = require('express');
-const { homeGetHouse, homeGetHouseDetail } = require('../controllers/homeApiController');
+const { homeGetHouse, homeGetHouseDetail, homeGetBookingInfo, homeBooking } = require('../controllers/homeApiController');
 const { handleRegister, handleLogin, handleLogout } = require('../controllers/apiController');
 const { countUsersByGroup, countStudentsByGender, countHousesByDistrict, countHousesByOwner, revenueStatistics } = require('../controllers/dashboardController');
 const { readFunc, createFunc, updateFunc, deleteFunc, getUserAccount, handleChangePassword, getUserAccountInfo, updateUserAccountInfo } = require('../controllers/userController');
@@ -147,6 +147,9 @@ router.post('/payment/zalopay/create-order', paymentCreateOrderFunc);
 
 router.get('/invoice/read', getInvoiceByEmail);
 router.get('/invoice/:id', getDetailInvoice);
+
+router.get('/home/house/booking/:id', homeGetBookingInfo);
+router.post('/home/booking', homeBooking);
 
 // Account routes
 router.get('/my-account/info', getUserAccountInfo);

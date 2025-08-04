@@ -1,4 +1,5 @@
 const db = require('../models/index');
+const { Op } = require("sequelize");
 
 const layTatCaNha = async () => {
     try {
@@ -122,7 +123,157 @@ const layChiTietNha = async (nhaId) => {
     }
 }
 
+const layThongTinDatPhong = async (roomId) => {
+    try {
+        const phong = await db.Phong.findOne({
+            where: { id: roomId },
+            attributes: ['id', 'tenPhong', 'giaThue', 'dienTich', 'sucChua', 'coGacXep'],
+            include: [
+                {
+                    model: db.Nha,
+                    attributes: ['id', 'ten', 'diaChi', 'moTa'],
+                    include: [
+                        {
+                            model: db.NguoiDung,
+                            attributes: ['hoTen', 'soDienThoai']
+                        },
+                        {
+                            model: db.Xa,
+                            attributes: ['tenXa'],
+                            include: [
+                                {
+                                    model: db.Huyen,
+                                    attributes: ['tenHuyen']
+                                },
+                                {
+                                    model: db.Tinh,
+                                    attributes: ['tenTinh']
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        });
+
+        if (!phong) {
+            return {
+                EM: 'Không tìm thấy phòng.',
+                EC: 1,
+                DT: null
+            };
+        }
+
+        const house = phong.Nha;
+        delete phong.dataValues.Nha;
+
+        return {
+            EM: 'Lấy thông tin đặt phòng thành công!',
+            EC: 0,
+            DT: {
+                phong,
+                nha: house
+            }
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: null
+        };
+    }
+}
+
+const xuLyDatPhong = async ({ roomId, formData, userId }) => {
+    try {
+        const { hoTen, email, soDienThoai } = formData || {};
+        if (!hoTen || !email || !soDienThoai) {
+            return {
+                EM: 'Thiếu thông tin người đặt phòng. (Missing form data)',
+                EC: 1,
+                DT: null
+            };
+        }
+
+        const hopDongHienTai = await db.HopDong.findOne({
+            where: {
+                sinhVienId: userId,
+                ngayKT: null
+            }
+        });
+
+        if (hopDongHienTai) {
+            return {
+                EM: 'Bạn đã có hợp đồng còn hiệu lực. Không thể đặt thêm phòng. (Additional bookings are not possible.)',
+                EC: 1,
+                DT: null
+            };
+        }
+        
+        const phong = await db.Phong.findOne({
+            where: { id: roomId },
+            attributes: ['tenPhong'],
+            include: [
+                {
+                    model: db.Nha,
+                    attributes: ['ten', 'chuTroId']
+                }
+            ]
+        });
+
+        if (!phong || !phong.Nha) {
+            return {
+                EM: 'Không tìm thấy thông tin phòng hoặc nhà. (Room or house not found)',
+                EC: 1,
+                DT: null
+            };
+        }
+
+        const daDatPhongNay = await db.LichSu.findOne({
+            where: {
+                sinhVienId: userId,
+                chuTroId: phong.Nha.chuTroId,
+                dienGiai: {
+                    [Op.like]: `% - phòng "${phong.tenPhong}".%`
+                }
+            }
+        });
+
+        if (daDatPhongNay) {
+            return {
+                EM: 'Bạn đã từng đặt phòng này trước đây. Không thể đặt lại cùng phòng. (Cannot book the same room twice.)',
+                EC: 1,
+                DT: null
+            };
+        }
+
+        const dienGiai = `Đặt phòng tại nhà trọ "${phong.Nha.ten}" - phòng "${phong.tenPhong}". Người đặt: ${hoTen}, Email: ${email}, SĐT: ${soDienThoai}.`;
+
+        await db.LichSu.create({
+            chuTroId: phong.Nha.chuTroId,
+            sinhVienId: userId,
+            dienGiai
+        });
+
+        return {
+            EM: 'Đặt phòng thành công. (Booking successfully)',
+            EC: 0,
+            DT: null
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: null
+        };
+    }
+}
+
 module.exports = {
     layTatCaNha,
-    layChiTietNha
+    layChiTietNha,
+    layThongTinDatPhong,
+    xuLyDatPhong
 }
