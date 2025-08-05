@@ -48,9 +48,11 @@ const { getHousesByEmail,
         updateRoomNamePrice,
         getStudentInfo,
         updateHouseNameDescription,
-        getImagesByHouse} = require('../controllers/manageController');
+        getImagesByHouse,
+        getBookingsByRoom,
+        getBookingCount} = require('../controllers/manageController');
 const { checkUserJWT, checkUserPermission } = require('../middleware/JWTAction');
-const { paymentReadFunc, paymentCreateOrderFunc, paymentCallbackFunc, getInvoiceByEmail, getDetailInvoice } = require('../controllers/paymentController');
+const { paymentReadFunc, paymentCreateOrderFunc, paymentCallbackFunc, getInvoiceByEmail, getDetailInvoice, getBookingByEmail } = require('../controllers/paymentController');
 const router = express.Router();
 
 router.get('/home/get-house', homeGetHouse);
@@ -141,12 +143,16 @@ router.get('/manage/room/student-info', getStudentInfo);
 router.put('/manage/house/update', updateHouseNameDescription);
 router.get('/manage/house/images/:houseId', getImagesByHouse);
 
+router.get('/manage/bookings/room/:roomId', getBookingsByRoom);
+router.get('/manage/bookings/count/:roomId', getBookingCount);
+
 // Other routes
 router.get('/payment/info-by-email', paymentReadFunc);
 router.post('/payment/zalopay/create-order', paymentCreateOrderFunc);
 
 router.get('/invoice/read', getInvoiceByEmail);
 router.get('/invoice/:id', getDetailInvoice);
+router.get('/bookings', getBookingByEmail);
 
 router.get('/home/house/booking/:id', homeGetBookingInfo);
 router.post('/home/booking', homeBooking);

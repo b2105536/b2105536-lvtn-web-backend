@@ -3,6 +3,7 @@ const axios = require('axios');
 const moment = require('moment');
 const CryptoJS = require('crypto-js');
 const config = require('../config/zalopay.config');
+const { Op, fn, col, where } = require('sequelize');
 
 const layThongTinGiayBaoTheoEmail = async (email) => {
     try {
@@ -349,10 +350,70 @@ const layChiTietHoaDon = async (hoaDonId) => {
     
 };
 
+const layDanhSachDatPhongTheoEmail = async (email) => {
+    try {
+        const sinhVien = await db.NguoiDung.findOne({
+            where: { email },
+            attributes: ['id', 'hoTen']
+        });
+
+        if (!sinhVien) {
+            return {
+                EC: 1,
+                EM: 'Không tìm thấy sinh viên với email này.',
+                DT: null
+            };
+        }
+
+        const lichSuDatPhong = await db.LichSu.findAll({
+            where: {
+                sinhVienId: sinhVien.id,
+                [Op.and]: [
+                    where(fn('LOWER', col('dienGiai')), {
+                        [Op.notLike]: '%done%'
+                    })
+                ]
+            },
+            order: [['createdAt', 'DESC']],
+            attributes: ['id', 'dienGiai', 'createdAt']
+        });
+
+        const regexTenNha = /nhà trọ\s+"([^"]+)"/i;
+        const regexTenPhong = /phòng\s+"([^"]+)"/i;
+
+        const results = lichSuDatPhong.map(item => {
+            const matchNha = item.dienGiai.match(regexTenNha);
+            const matchPhong = item.dienGiai.match(regexTenPhong);
+
+            return {
+                id: item.id,
+                createdAt: item.createdAt,
+                dienGiai: item.dienGiai,
+                tenNha: matchNha ? matchNha[1] : null,
+                tenPhong: matchPhong ? matchPhong[1] : null
+            };
+        });
+
+        return {
+            EC: 0,
+            EM: 'Lấy danh sách đặt phòng thành công! (Get booking list successfully)',
+            DT: results
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong)',
+            EC: 1,
+            DT: []
+        };
+    }
+};
+
 module.exports = {
     layThongTinGiayBaoTheoEmail,
     taoThanhToanZaloPay,
     capNhatHoaDonSauKhiThanhToan,
     layHoaDonTheoEmail,
-    layChiTietHoaDon
+    layChiTietHoaDon,
+    layDanhSachDatPhongTheoEmail
 }

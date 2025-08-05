@@ -1346,6 +1346,114 @@ const layAnhNhaTheoNha = async (houseId) => {
     }
 }
 
+// Đặt phòng:
+const layDanhSachDatPhongTheoPhong = async (roomId) => {
+    try {
+        const phong = await db.Phong.findOne({
+            where: { id: roomId },
+            attributes: ['id', 'tenPhong'],
+            include: [
+                {
+                    model: db.Nha,
+                    attributes: ['id', 'ten', 'chuTroId']
+                }
+            ]
+        });
+
+        if (!phong || !phong.Nha) {
+            return {
+                EM: 'Không tìm thấy thông tin phòng hoặc nhà. (Room or house not found)',
+                EC: 1,
+                DT: []
+            };
+        }
+
+        const lichSuDatPhong = await db.LichSu.findAll({
+            where: {
+                chuTroId: phong.Nha.chuTroId,
+                dienGiai: {
+                    [Op.like]: `% - phòng "${phong.tenPhong}".%`
+                }
+            },
+            order: [['createdAt', 'DESC']]
+        });
+
+        const ketQua = await Promise.all(
+            lichSuDatPhong.map(async (item) => {
+                let sinhVien = null;
+
+                if (item.sinhVienId) {
+                    sinhVien = await db.NguoiDung.findOne({
+                        where: { id: item.sinhVienId },
+                        attributes: ['id', 'hoTen', 'email', 'soDienThoai']
+                    });
+                }
+
+                return {
+                    sinhVien: sinhVien || null,
+                    dienGiai: item.dienGiai,
+                    ngayDat: item.createdAt
+                };
+            })
+        );
+
+        return {
+            EM: 'Lấy danh sách đặt phòng thành công. (Get booking list successfully)',
+            EC: 0,
+            DT: ketQua
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
+const demSoDatPhong = async (roomId) => {
+    try {
+        const phong = await db.Phong.findOne({
+            where: { id: roomId },
+            include: {
+                model: db.Nha,
+                attributes: ['chuTroId', 'ten']
+            }
+        });
+
+        if (!phong || !phong.Nha) {
+            return {
+                EM: 'Không tìm thấy thông tin phòng hoặc nhà. (Room or house not found)',
+                EC: 1,
+                DT: 0
+            };
+        }
+
+        const soDat = await db.LichSu.count({
+            where: {
+                chuTroId: phong.Nha.chuTroId,
+                dienGiai: {
+                    [Op.like]: `% - phòng "${phong.tenPhong}".%`
+                }
+            }
+        });
+
+        return {
+            EM: 'Lấy số đếm đặt phòng thành công. (Get booking count successfully)',
+            EC: 0,
+            DT: soDat
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong)',
+            EC: 1,
+            DT: ''
+        };
+    }
+}
+
 module.exports = {
     layTatCaNhaTheoChuSoHuu,
     layPhongTheoNha,
@@ -1370,5 +1478,7 @@ module.exports = {
     capNhatTenGiaPhong,
     layThongTinSinhVien,
     capNhatTenVaMoTaNha,
-    layAnhNhaTheoNha
+    layAnhNhaTheoNha,
+    layDanhSachDatPhongTheoPhong,
+    demSoDatPhong
 }

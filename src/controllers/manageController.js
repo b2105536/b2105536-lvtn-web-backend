@@ -499,6 +499,64 @@ const getImagesByHouse = async (req, res) => {
     }
 }
 
+// Đặt phòng:
+const getBookingsByRoom = async (req, res) => {
+    try {
+        const { roomId } = req.params;
+
+        if (!roomId) {
+            return res.status(400).json({
+                EM: 'Thiếu mã phòng. (Missing roomId)',
+                EC: 1,
+                DT: null
+            });
+        }
+
+        const result = await manageApiService.layDanhSachDatPhongTheoPhong(roomId);
+
+        return res.status(200).json({
+            EM: result.EM,
+            EC: result.EC,
+            DT: result.DT
+        });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            EM: 'error from server',
+            EC: '-1',
+            DT: ''
+        });
+    }
+}
+
+const getBookingCount = async (req, res) => {
+    try {
+        const { roomId } = req.params;
+
+        if (!roomId) {
+            return res.status(400).json({
+                EM: 'Thiếu mã phòng. (Missing roomId)',
+                EC: 1,
+                DT: null
+            });
+        }
+
+        const result = await manageApiService.demSoDatPhong(roomId);
+        return res.status(200).json({
+            EM: result.EM,
+            EC: result.EC,
+            DT: result.DT
+        });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            EM: 'error from server',
+            EC: '-1',
+            DT: ''
+        });
+    }
+}
+
 module.exports = {
     getHousesByEmail,
     getRoomsByHouse,
@@ -521,5 +579,7 @@ module.exports = {
     updateRoomNamePrice,
     getStudentInfo,
     updateHouseNameDescription,
-    getImagesByHouse
+    getImagesByHouse,
+    getBookingsByRoom,
+    getBookingCount
 }
