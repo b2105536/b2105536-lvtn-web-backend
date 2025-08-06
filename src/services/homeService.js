@@ -195,21 +195,6 @@ const xuLyDatPhong = async ({ roomId, formData, userId }) => {
                 DT: null
             };
         }
-
-        const hopDongHienTai = await db.HopDong.findOne({
-            where: {
-                sinhVienId: userId,
-                ngayKT: null
-            }
-        });
-
-        if (hopDongHienTai) {
-            return {
-                EM: 'Bạn đã có hợp đồng còn hiệu lực. Không thể đặt thêm phòng. (Additional bookings are not possible.)',
-                EC: 1,
-                DT: null
-            };
-        }
         
         const phong = await db.Phong.findOne({
             where: { id: roomId },

@@ -173,11 +173,41 @@ const getBookingByEmail = async (req, res) => {
     }
 };
 
+const deleteBooking = async (req, res) => {
+    try {
+        const { bookingId, email } = req.body;
+
+        if (!bookingId || !email) {
+            return res.status(400).json({
+                EM: 'Thiếu thông tin bắt buộc. (Missing required parameters)',
+                EC: 1,
+                DT: null
+            });
+        }
+
+        const result = await paymentService.xoaDatPhong(bookingId, email);
+
+        return res.status(200).json({
+            EM: result.EM,
+            EC: result.EC,
+            DT: result.DT
+        });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            EM: 'error from server',
+            EC: '-1',
+            DT: ''
+        });
+    }
+};
+
 module.exports = {
     paymentReadFunc,
     paymentCreateOrderFunc,
     paymentCallbackFunc,
     getInvoiceByEmail,
     getDetailInvoice,
-    getBookingByEmail
+    getBookingByEmail,
+    deleteBooking
 }

@@ -3,7 +3,7 @@ const axios = require('axios');
 const moment = require('moment');
 const CryptoJS = require('crypto-js');
 const config = require('../config/zalopay.config');
-const { Op, fn, col, where } = require('sequelize');
+const { Op } = require('sequelize');
 
 const layThongTinGiayBaoTheoEmail = async (email) => {
     try {
@@ -366,16 +366,24 @@ const layDanhSachDatPhongTheoEmail = async (email) => {
         }
 
         const lichSuDatPhong = await db.LichSu.findAll({
-            where: {
-                sinhVienId: sinhVien.id,
-                [Op.and]: [
-                    where(fn('LOWER', col('dienGiai')), {
-                        [Op.notLike]: '%done%'
-                    })
-                ]
-            },
+            where: { sinhVienId: sinhVien.id },
             order: [['createdAt', 'DESC']],
-            attributes: ['id', 'dienGiai', 'createdAt']
+            attributes: ['id', 'dienGiai', 'createdAt', 'chuTroId']
+        });
+        
+        const chuTroIds = [...new Set(lichSuDatPhong.map(ls => ls.chuTroId))];
+        const chuTros = await db.NguoiDung.findAll({
+            where: {
+                id: {
+                    [Op.in]: chuTroIds
+                }
+            },
+            attributes: ['id', 'hoTen', 'soDienThoai']
+        });
+
+        const chuTroMap = {};
+        chuTros.forEach(ct => {
+            chuTroMap[ct.id] = ct;
         });
 
         const regexTenNha = /nhà trọ\s+"([^"]+)"/i;
@@ -384,13 +392,16 @@ const layDanhSachDatPhongTheoEmail = async (email) => {
         const results = lichSuDatPhong.map(item => {
             const matchNha = item.dienGiai.match(regexTenNha);
             const matchPhong = item.dienGiai.match(regexTenPhong);
+            const chuTro = chuTroMap[item.chuTroId];
 
             return {
                 id: item.id,
                 createdAt: item.createdAt,
                 dienGiai: item.dienGiai,
                 tenNha: matchNha ? matchNha[1] : null,
-                tenPhong: matchPhong ? matchPhong[1] : null
+                tenPhong: matchPhong ? matchPhong[1] : null,
+                hoTenChuTro: chuTro?.hoTen || null,
+                soDienThoaiChuTro: chuTro?.soDienThoai || null
             };
         });
 
@@ -409,11 +420,62 @@ const layDanhSachDatPhongTheoEmail = async (email) => {
     }
 };
 
+const xoaDatPhong = async (bookingId, email) => {
+    try {
+        const sinhVien = await db.NguoiDung.findOne({
+            where: { email },
+            attributes: ['id']
+        });
+
+        if (!sinhVien) {
+            return {
+                EM: 'Không tìm thấy sinh viên với email này. (User not found)',
+                EC: 1,
+                DT: null
+            };
+        }
+
+        const lichSu = await db.LichSu.findOne({
+            where: {
+                id: bookingId,
+                sinhVienId: sinhVien.id,
+                dienGiai: {
+                    [Op.notLike]: '%done%'
+                }
+            }
+        });
+
+        if (!lichSu) {
+            return {
+                EM: 'Không thể xóa đặt phòng: Không tìm thấy hoặc đã được xử lý. (Booking cannot be deleted)',
+                EC: 1,
+                DT: null
+            };
+        }
+
+        await lichSu.destroy();
+
+        return {
+            EM: 'Xóa đặt phòng thành công! (Booking deleted successfully)',
+            EC: 0,
+            DT: null
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong)',
+            EC: 1,
+            DT: null
+        };
+    }
+};
+
 module.exports = {
     layThongTinGiayBaoTheoEmail,
     taoThanhToanZaloPay,
     capNhatHoaDonSauKhiThanhToan,
     layHoaDonTheoEmail,
     layChiTietHoaDon,
-    layDanhSachDatPhongTheoEmail
+    layDanhSachDatPhongTheoEmail,
+    xoaDatPhong
 }

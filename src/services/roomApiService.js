@@ -206,7 +206,7 @@ const xoaPhongBangId = async (roomId) => {
             where: {id: roomId},
             include: [{
                 model: db.HopDong,
-                where: { ngayKT: null },
+                where: { ttHopDongId: 8 },
                 required: false
             }]
         });

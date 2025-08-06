@@ -1,5 +1,5 @@
 const db = require('../models/index');
-const { Op } = require('sequelize');
+const { Op, fn, col, where } = require('sequelize');
 const moment = require('moment-timezone');
 
 // Khách thuê
@@ -56,7 +56,7 @@ const layPhongTheoNha = async (nhaId) => {
             include: [
                 {
                     model: db.HopDong,
-                    where: { ngayKT: null },
+                    where: { ttHopDongId: 8 },
                     required: false,
                     include: [
                         {
@@ -102,7 +102,7 @@ const taoHoacThemHopDongKhach = async (data) => {
         });
         if (!chuTro) {
             return {
-                EM: 'Không tìm thấy chủ trọ!',
+                EM: 'Không tìm thấy chủ trọ! (Landlord not found)',
                 EC: 1,
                 DT: null
             };
@@ -117,28 +117,62 @@ const taoHoacThemHopDongKhach = async (data) => {
         });
         if (!nguoiDung) {
             return {
-                EM: 'Người dùng không tồn tại trong hệ thống.',
+                EM: 'Người dùng không tồn tại trong hệ thống. (User not found)',
                 EC: 1,
                 DT: null
             };
         }
         if (nguoiDung.nhomId !== 3) {
             return {
-                EM: 'Chỉ người dùng thuộc nhóm sinh viên mới được thêm!',
+                EM: 'Chỉ người dùng thuộc nhóm sinh viên mới được thêm! (Only students can be added)',
                 EC: 1,
                 DT: null
             };
         }
 
-        const daCoHopDong = await db.HopDong.findOne({
+        const hopDongDangHoatDong = await db.HopDong.findOne({
             where: {
-                sinhVienId: nguoiDung.id,
-                ngayKT: null
+                phongId: data.phongId,
+                ttHopDongId: 8
             }
         });
-        if (daCoHopDong) {
+        if (hopDongDangHoatDong) {
             return {
-                EM: 'Người dùng đã có hợp đồng ở phòng khác.',
+                EM: 'Phòng này đã có người thuê! (This room is occupied)',
+                EC: 1,
+                DT: null
+            };
+        }
+
+        const phong = await db.Phong.findOne({
+            where: { id: data.phongId },
+            include: {
+                model: db.Nha,
+                attributes: ['ten']
+            }
+        });
+
+        const sinhVien = await db.NguoiDung.findOne({
+            where: { id: nguoiDung.id },
+            attributes: ['hoTen', 'email', 'soDienThoai']
+        });
+
+        const dienGiaiMau = `Đặt phòng tại nhà trọ "${phong?.Nha?.ten}" - phòng "${phong?.tenPhong}". Người đặt: ${sinhVien?.hoTen}, Email: ${sinhVien?.email}, SĐT: ${sinhVien?.soDienThoai}.`;
+
+        const lichSu = await db.LichSu.findOne({
+            where: {
+                chuTroId: chuTro.id,
+                sinhVienId: nguoiDung.id,
+                dienGiai: dienGiaiMau,
+                dienGiai: {
+                    [Op.notLike]: '%done%'
+                }
+            }
+        });
+
+        if (!lichSu) {
+            return {
+                EM: 'Không tìm thấy lịch sử đặt phòng hợp lệ. (No matching booking history found)',
                 EC: 1,
                 DT: null
             };
@@ -158,6 +192,20 @@ const taoHoacThemHopDongKhach = async (data) => {
             { ttPhongId: 5 },
             { where: { id: data.phongId } }
         );
+
+        const lichSuThuePhong = await db.LichSu.findOne({
+            where: {
+                chuTroId: chuTro.id,
+                sinhVienId: nguoiDung.id,
+                dienGiai: dienGiaiMau
+            }
+        });
+
+        if (lichSuThuePhong) {
+            await lichSuThuePhong.update({
+                dienGiai: `Done - ${lichSuThuePhong.dienGiai}`
+            });
+        }
 
         return {
             EM: 'Thêm khách vào phòng thành công! (Student added successfully)',
@@ -1145,7 +1193,7 @@ const capNhatTenGiaPhong = async (data) => {
             include: [
                 {
                     model: db.HopDong,
-                    where: { ngayKT: null },
+                    where: { ttHopDongId: 8 },
                     required: false
                 }
             ]
@@ -1213,7 +1261,7 @@ const layThongTinSinhVien = async (phongId) => {
             include: [
                 {
                     model: db.HopDong,
-                    where: { ngayKT: null },
+                    where: { ttHopDongId: 8 },
                     required: false,
                     include: [
                         {
@@ -1433,9 +1481,16 @@ const demSoDatPhong = async (roomId) => {
         const soDat = await db.LichSu.count({
             where: {
                 chuTroId: phong.Nha.chuTroId,
-                dienGiai: {
-                    [Op.like]: `% - phòng "${phong.tenPhong}".%`
-                }
+                [Op.and]: [
+                    {
+                        dienGiai: {
+                            [Op.like]: `% - phòng "${phong.tenPhong}".%`
+                        }
+                    },
+                    where(fn('LOWER', col('dienGiai')), {
+                        [Op.notLike]: 'done%'
+                    })
+                ]
             }
         });
 
