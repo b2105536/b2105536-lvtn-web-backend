@@ -461,6 +461,55 @@ const getStudentInfo = async (req, res) => {
     }
 }
 
+const getAssetOfRoom = async (req, res) => {
+    try {
+        let id = req.params.phongId;
+        let data = await manageApiService.layTaiSanCuaPhong(id);
+        return res.status(200).json({
+            EM: data.EM,
+            EC: data.EC,
+            DT: data.DT
+        });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            EM: 'error from server',
+            EC: '-1',
+            DT: ''
+        });
+    }
+}
+
+const updateRoomAssets = async (req, res) => {
+    try {
+        const roomId = req.params.phongId;
+        const assets = req.body.assets;
+
+        if (!roomId || !Array.isArray(assets)) {
+            return res.status(400).json({
+                EM: 'Thiếu dữ liệu đầu vào (Missing required inputs)',
+                EC: 1,
+                DT: ''
+            });
+        }
+
+        const result = await manageApiService.luuTaiSanCuaPhong(roomId, assets);
+
+        return res.status(200).json({
+            EM: result.EM,
+            EC: result.EC,
+            DT: result.DT
+        });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            EM: 'error from server',
+            EC: '-1',
+            DT: ''
+        });
+    }
+}
+
 // Nhà:
 const updateHouseNameDescription = async (req, res) => {
     try {
@@ -670,5 +719,7 @@ module.exports = {
     assetCreateFunc,
     assetReadFunc,
     assetDeleteFunc,
-    assetUpdateFunc
+    assetUpdateFunc,
+    getAssetOfRoom,
+    updateRoomAssets
 }

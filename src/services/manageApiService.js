@@ -1299,6 +1299,78 @@ const layThongTinSinhVien = async (phongId) => {
     }
 }
 
+const layTaiSanCuaPhong = async (id) => {
+    try {
+        if (!id) {
+            return {
+                EM: 'Không tìm thấy tài sản nào. (Not found any assets)',
+                EC: 0,
+                DT: []
+            };
+        }
+
+        let phong = await db.Phong.findOne({
+            where: { id: id },
+            attributes: ["id", "tenPhong"],
+            include: [
+                {
+                    model: db.PhongTaiSan,
+                    attributes: ["id", "soLuong", "tinhTrang"],
+                    include: [
+                        {
+                            model: db.TaiSan,
+                            attributes: ["id", "tenTaiSan", "moTaTaiSan", "dvtTaiSan"]
+                        }
+                    ]
+                }
+            ]        
+        });
+
+        return {
+            EM: 'Lấy tài sản theo phòng thành công! (Get asset(s) of room successfully)',
+            EC: 0,
+            DT: phong
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
+const luuTaiSanCuaPhong = async (roomId, assets) => {
+    try {
+        await db.PhongTaiSan.destroy({
+            where: { phongId: roomId }
+        });
+
+        const newAssets = assets.map(item => ({
+            phongId: roomId,
+            taiSanId: item.taiSanId,
+            soLuong: item.soLuong,
+            tinhTrang: item.tinhTrang
+        }));
+
+        await db.PhongTaiSan.bulkCreate(newAssets);
+
+        return {
+            EM: 'Lưu tài sản cho phòng thành công! (Assets of room saved successfully)',
+            EC: 0,
+            DT: ''
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
 // Nhà:
 const capNhatTenVaMoTaNha = async (data) => {
     try {
@@ -1548,7 +1620,7 @@ const taoTaiSan = async (assets) => {
 const layTatCaTaiSan = async () => {
     try {
         let data = await db.TaiSan.findAll({
-            order: [['id', 'DESC']]
+            order: [['id', 'ASC']]
         });
         return {
             EM: 'Lấy dữ liệu thành công! (Get data successfully)',
@@ -1702,5 +1774,7 @@ module.exports = {
     layTatCaTaiSan,
     layTaiSanTheoTrang,
     xoaTaiSanBangId,
-    capNhatTaiSan
+    capNhatTaiSan,
+    layTaiSanCuaPhong,
+    luuTaiSanCuaPhong
 }
