@@ -557,6 +557,91 @@ const getBookingCount = async (req, res) => {
     }
 }
 
+// Tài sản:
+const assetCreateFunc = async (req, res) => {
+    try {
+        let data = await manageApiService.taoTaiSan(req.body);
+        return res.status(200).json({
+            EM: data.EM,
+            EC: data.EC,
+            DT: data.DT
+        });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            EM: 'error from server',
+            EC: '-1',
+            DT: ''
+        });
+    }
+}
+
+const assetReadFunc = async (req, res) => {
+    try {
+        if (req.query.page && req.query.limit) {
+            let page = req.query.page;
+            let limit = req.query.limit;
+
+            let data = await manageApiService.layTaiSanTheoTrang(+page, +limit);
+            return res.status(200).json({
+                EM: data.EM,
+                EC: data.EC,
+                DT: data.DT
+            });
+        } else {
+            let data = await manageApiService.layTatCaTaiSan();
+            return res.status(200).json({
+                EM: data.EM,
+                EC: data.EC,
+                DT: data.DT
+            });
+        }
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            EM: 'error from server',
+            EC: '-1',
+            DT: ''
+        });
+    }
+}
+
+const assetDeleteFunc = async (req, res) => {
+    try {
+        let data = await manageApiService.xoaTaiSanBangId(req.body.id);
+        return res.status(200).json({
+            EM: data.EM,
+            EC: data.EC,
+            DT: data.DT
+        });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            EM: 'error from server',
+            EC: '-1',
+            DT: ''
+        });
+    }
+}
+
+const assetUpdateFunc = async (req, res) => {
+    try {
+        let data = await manageApiService.capNhatTaiSan(req.body);
+        return res.status(200).json({
+            EM: data.EM,
+            EC: data.EC,
+            DT: data.DT
+        });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            EM: 'error from server',
+            EC: '-1',
+            DT: ''
+        });
+    }
+}
+
 module.exports = {
     getHousesByEmail,
     getRoomsByHouse,
@@ -581,5 +666,9 @@ module.exports = {
     updateHouseNameDescription,
     getImagesByHouse,
     getBookingsByRoom,
-    getBookingCount
+    getBookingCount,
+    assetCreateFunc,
+    assetReadFunc,
+    assetDeleteFunc,
+    assetUpdateFunc
 }

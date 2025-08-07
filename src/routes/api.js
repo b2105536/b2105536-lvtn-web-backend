@@ -50,7 +50,11 @@ const { getHousesByEmail,
         updateHouseNameDescription,
         getImagesByHouse,
         getBookingsByRoom,
-        getBookingCount} = require('../controllers/manageController');
+        getBookingCount,
+        assetCreateFunc,
+        assetReadFunc,
+        assetDeleteFunc,
+        assetUpdateFunc} = require('../controllers/manageController');
 const { checkUserJWT, checkUserPermission } = require('../middleware/JWTAction');
 const { paymentReadFunc, paymentCreateOrderFunc, paymentCallbackFunc, getInvoiceByEmail, getDetailInvoice, getBookingByEmail, deleteBooking } = require('../controllers/paymentController');
 const router = express.Router();
@@ -145,6 +149,11 @@ router.get('/manage/house/images/:houseId', getImagesByHouse);
 
 router.get('/manage/bookings/room/:roomId', getBookingsByRoom);
 router.get('/manage/bookings/count/:roomId', getBookingCount);
+
+router.post('/manage/asset/create', assetCreateFunc);
+router.get('/manage/asset/read', assetReadFunc);
+router.delete('/manage/asset/delete', assetDeleteFunc);
+router.put('/manage/asset/update', assetUpdateFunc);
 
 // Other routes
 router.get('/payment/info-by-email', paymentReadFunc);

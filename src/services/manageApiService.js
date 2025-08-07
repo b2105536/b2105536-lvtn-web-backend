@@ -1509,6 +1509,168 @@ const demSoDatPhong = async (roomId) => {
     }
 }
 
+// Tài sản:
+const taoTaiSan = async (assets) => {
+    try {
+        let tsHienThoi = await db.TaiSan.findAll({
+            attributes: ['tenTaiSan', 'moTaTaiSan', 'dvtTaiSan'],
+            raw: true
+        });
+
+        const persists = assets.filter(({ tenTaiSan: tenTaiSan1 }) =>
+            !tsHienThoi.some(({ tenTaiSan: tenTaiSan2 }) => tenTaiSan1 === tenTaiSan2)
+        );
+        
+        if (persists.length === 0) {
+            return {
+                EM: 'Không có tài sản để tạo. (Nothing to create)',
+                EC: 0,
+                DT: []
+            };
+        }
+        const taiSanDaTao = await db.TaiSan.bulkCreate(persists);
+
+        return {
+                EM: `Tạo ${taiSanDaTao.length} tài sản thành công! (Asset(s) created successfully)`,
+                EC: 0,
+                DT: []
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
+const layTatCaTaiSan = async () => {
+    try {
+        let data = await db.TaiSan.findAll({
+            order: [['id', 'DESC']]
+        });
+        return {
+            EM: 'Lấy dữ liệu thành công! (Get data successfully)',
+            EC: 0,
+            DT: data
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
+const layTaiSanTheoTrang = async (page, limit) => {
+    try {
+        let offset = (page - 1) * limit;
+        const { count, rows } = await db.TaiSan.findAndCountAll({
+            offset: offset,
+            limit: limit,
+            attributes: ["id", "tenTaiSan", "moTaTaiSan", "dvtTaiSan"],
+            order: [['id', 'DESC']]
+        });
+        let totalPages = Math.ceil(count / limit);
+        let data = {
+            totalRows: count,
+            totalPages: totalPages,
+            assets: rows
+        };
+        return {
+            EM: 'Ok! (Fetch ok)',
+            EC: 0,
+            DT: data
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
+const xoaTaiSanBangId = async (id) => {
+    try {
+        let taiSan = await db.TaiSan.findOne({
+            where: {id: id},
+            include: [
+                { model: db.PhongTaiSan }
+            ]
+        });
+
+        if (!taiSan) {
+            return {
+                EM: 'Không tìm thấy tài sản. (Asset not found)',
+                EC: 1,
+                DT: []
+            };
+        }
+
+        if (taiSan.PhongTaiSans && taiSan.PhongTaiSans.length > 0) {
+            return {
+                EM: 'Tài sản đang được sử dụng, không thể xóa. (Asset is in use, cannot be deleted)',
+                EC: 1,
+                DT: []
+            };
+        }
+
+        await taiSan.destroy();
+
+        return {
+            EM: 'Xóa tài sản thành công! (Asset deleted successfully)',
+            EC: 0,
+            DT: []
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
+const capNhatTaiSan = async (data) => {
+    try {
+        let taiSan = await db.TaiSan.findOne({
+            where: {id: data.id}
+        });
+        if (taiSan) {
+            await taiSan.update({
+                tenTaiSan: data.tenTaiSan,
+                moTaTaiSan: data.moTaTaiSan,
+                dvtTaiSan: data.dvtTaiSan,
+            });
+
+            return {
+                EM: 'Cập nhật tài sản thành công! (Asset updated successfully)',
+                EC: 0,
+                DT: ''
+            };
+        } else {
+            return {
+                EM: 'Không tìm thấy tài sản. (Asset not found)',
+                EC: 2,
+                DT: ''
+            };
+        }
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
 module.exports = {
     layTatCaNhaTheoChuSoHuu,
     layPhongTheoNha,
@@ -1535,5 +1697,10 @@ module.exports = {
     capNhatTenVaMoTaNha,
     layAnhNhaTheoNha,
     layDanhSachDatPhongTheoPhong,
-    demSoDatPhong
+    demSoDatPhong,
+    taoTaiSan,
+    layTatCaTaiSan,
+    layTaiSanTheoTrang,
+    xoaTaiSanBangId,
+    capNhatTaiSan
 }
