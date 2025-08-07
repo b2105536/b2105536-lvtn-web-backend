@@ -23,6 +23,11 @@ module.exports = (sequelize, DataTypes) => {
       Phong.hasMany(models.PhongTaiSan, {
         foreignKey: 'phongId'
       });
+      Phong.belongsToMany(models.TaiSan, {
+        through: models.PhongTaiSan,
+        foreignKey: 'phongId',
+        otherKey: 'taiSanId'
+      });
     }
   }
   Phong.init({

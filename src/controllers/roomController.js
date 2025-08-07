@@ -20,32 +20,32 @@ const getAllCode = async (req, res) => {
 
 const readFunc = async (req, res) => {
     try {
-        let { page, limit, nhaId, ttPhongId, giaThueTu, giaThueDen, dienTichTu, dienTichDen, sucChua, coGacXep } = req.query;
+        let { page, limit, nhaId, ttPhongId, giaThueTu, giaThueDen, dienTichTu, dienTichDen, sucChua, coGacXep, taiSanId } = req.query;
 
         if (page && limit && nhaId) {
             let data = await roomApiService.layPhongTheoTrang(
-                +page, +limit, nhaId, ttPhongId, giaThueTu, giaThueDen, dienTichTu, dienTichDen, sucChua, coGacXep
+                +page, +limit, nhaId, ttPhongId, giaThueTu, giaThueDen, dienTichTu, dienTichDen, sucChua, coGacXep, taiSanId
             );
 
             return res.status(200).json({
-                EM: data.EM, // error message
-                EC: data.EC, // error code
-                DT: data.DT // data (trả về data nên service cũng trả về data)
+                EM: data.EM,
+                EC: data.EC,
+                DT: data.DT
             });
         } else {
             let data = await roomApiService.layTatCaPhong();
             return res.status(200).json({
-                EM: data.EM, // error message
-                EC: data.EC, // error code
-                DT: data.DT // data (trả về data nên service cũng trả về data)
+                EM: data.EM,
+                EC: data.EC,
+                DT: data.DT
             });
         }
     } catch (e) {
         console.log(e);
         return res.status(500).json({
-            EM: 'error from server', // error message
-            EC: '-1', // error code
-            DT: '' // data
+            EM: 'error from server',
+            EC: '-1',
+            DT: ''
         });
     }
 }

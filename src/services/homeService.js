@@ -94,6 +94,16 @@ const layChiTietNha = async (nhaId) => {
                         {
                             model: db.BangMa,
                             attributes: ['giaTri'],
+                        },
+                        {
+                            model: db.PhongTaiSan,
+                            attributes: ['soLuong', 'tinhTrang'],
+                            include: [
+                                {
+                                    model: db.TaiSan,
+                                    attributes: ['tenTaiSan', 'moTaTaiSan', 'dvtTaiSan']
+                                }
+                            ]
                         }
                     ]
                 }

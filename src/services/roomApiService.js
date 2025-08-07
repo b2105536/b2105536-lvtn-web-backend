@@ -63,10 +63,14 @@ const layTatCaPhong = async () => {
     }
 }
 
-const layPhongTheoTrang = async (page, limit, nhaId, ttPhongId, giaThueTu, giaThueDen, dienTichTu, dienTichDen, sucChua, coGacXep) => {
+const layPhongTheoTrang = async (page, limit, nhaId, ttPhongId, giaThueTu, giaThueDen, dienTichTu, dienTichDen, sucChua, coGacXep, taiSanId) => {
     try {
         let offset = (page - 1) * limit;
         let whereClause = {};
+        let includeClause = [
+            { model: db.BangMa, attributes: ["id", "tuKhoa", "loai", "giaTri"] },
+            { model: db.Nha, attributes: ["id", "ten"] }
+        ];
 
         if (nhaId && nhaId !== 'ALL') {
             whereClause.nhaId = +nhaId;
@@ -104,15 +108,21 @@ const layPhongTheoTrang = async (page, limit, nhaId, ttPhongId, giaThueTu, giaTh
             whereClause.coGacXep = coGacXep === 'true';
         }
 
+        if (taiSanId && taiSanId !== 'ALL') {
+            includeClause.push({
+                model: db.TaiSan,
+                through: { attributes: [] },
+                where: { id: +taiSanId },
+                required: true
+            });
+        }
+
         const { count, rows } = await db.Phong.findAndCountAll({
             offset: offset,
             limit: limit,
             where: whereClause,
             attributes: ["id", "tenPhong", "coGacXep", "giaThue", "dienTich", "sucChua"],
-            include: [
-                    { model: db.BangMa, attributes: ["id", "tuKhoa", "loai", "giaTri"] },
-                    { model: db.Nha, attributes: ["id", "ten"] }
-            ],
+            include: includeClause,
             order: [['id', 'DESC']]
         });
         let totalPages = Math.ceil(count / limit);
