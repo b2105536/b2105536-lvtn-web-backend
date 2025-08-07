@@ -29,6 +29,9 @@ module.exports = (sequelize, DataTypes) => {
       NguoiDung.hasMany(models.LichSu, {
         foreignKey: 'chuTroId'
       });
+      NguoiDung.hasOne(models.Blacklist, {
+        foreignKey: 'sinhVienId'
+      });
     }
   }
   NguoiDung.init({
