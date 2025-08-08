@@ -3,5 +3,5 @@ module.exports = {
     key1: 'PcY4iZIKFCIdgZvA6ueMcMHHUbRLYjPL',
     key2: 'kLtgPl8HHhfvMuDHPwKfgfsY4Ydm9eIz',
     endpoint: 'https://sb-openapi.zalopay.vn/v2/create',
-    callback_url: 'https://c3f1181ef854.ngrok-free.app/api/v1/payment/zalopay/callback',
+    callback_url: 'https://2a7d6b1ffccf.ngrok-free.app/api/v1/payment/zalopay/callback',
 };

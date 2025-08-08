@@ -163,8 +163,8 @@ const taoHoacThemHopDongKhach = async (data) => {
             where: {
                 chuTroId: chuTro.id,
                 sinhVienId: nguoiDung.id,
-                dienGiai: dienGiaiMau,
                 dienGiai: {
+                    [Op.like]: `%phòng "${phong?.tenPhong}"%`,
                     [Op.notLike]: '%done%'
                 }
             }
@@ -591,6 +591,13 @@ const taoHoaDon = async (data) => {
         if (dien && dien.dichVuId) {
             const giaDien = await layGiaHienTai(dien.dichVuId);
             const soLuong = dien.csSau - dien.csTrc;
+            if (soLuong < 0) {
+                return {
+                    EM: 'Chỉ số sau không thể nhỏ hơn chỉ số trước!',
+                    EC: 1,
+                    DT: []
+                };
+            }
             const tien = soLuong * Number(giaDien);
             tongTien += tien;
 
@@ -606,6 +613,13 @@ const taoHoaDon = async (data) => {
         if (nuoc && nuoc.dichVuId) {
             const giaNuoc = await layGiaHienTai(nuoc.dichVuId);
             const soLuong = nuoc.csSau - nuoc.csTrc;
+            if (soLuong < 0) {
+                return {
+                    EM: 'Chỉ số sau không thể nhỏ hơn chỉ số trước!',
+                    EC: 1,
+                    DT: []
+                };
+            }
             const tien = soLuong * Number(giaNuoc);
 
             tongTien += tien;

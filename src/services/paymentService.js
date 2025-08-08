@@ -15,14 +15,14 @@ const layThongTinGiayBaoTheoEmail = async (email) => {
         if (!sinhVien) {
             return {
                 EC: 1,
-                EM: 'Không tìm thấy sinh viên với email này.',
+                EM: 'Không tìm thấy sinh viên với email này. (User not found)',
                 DT: null
             };
         }
 
         const sinhVienId = sinhVien.id;
 
-        const hopDong = await db.HopDong.findOne({
+        const hopDongs = await db.HopDong.findAll({
             where: {
                 sinhVienId,
                 ttHopDongId: 8
@@ -43,64 +43,73 @@ const layThongTinGiayBaoTheoEmail = async (email) => {
                     model: db.HoaDon,
                     order: [['ngayTao', 'DESC']],
                     limit: 1
+                },
+                {
+                    model: db.Phong,
+                    attributes: ['tenPhong']
                 }
             ]
         });
 
-        if (!hopDong) {
+        if (!hopDongs || hopDongs.length === 0) {
             return {
                 EC: 1,
-                EM: 'Sinh viên chưa có hợp đồng thuê trọ.',
+                EM: 'Sinh viên chưa có hợp đồng thuê trọ. (Student has no any contract)',
                 DT: null
             };
         }
 
-        const lastUsage = await db.SuDung.findOne({
-            where: { hopDongId: hopDong.id },
-            order: [['ngayGN', 'DESC']]
-        });
+        const result = await Promise.all(hopDongs.map(async (hopDong) => {
+            const lastUsage = await db.SuDung.findOne({
+                where: { hopDongId: hopDong.id },
+                order: [['ngayGN', 'DESC']]
+            });
 
-        const ngayGN = lastUsage?.ngayGN || new Date();
+            const ngayGN = lastUsage?.ngayGN || new Date();
 
-        const dsDichVu = await Promise.all(
-            hopDong.DichVus.map(async (dv) => {
-                const lastSD = await db.SuDung.findOne({
-                    where: {
-                        hopDongId: hopDong.id,
+            const dsDichVu = await Promise.all(
+                hopDong.DichVus.map(async (dv) => {
+                    const lastSD = await db.SuDung.findOne({
+                        where: {
+                            hopDongId: hopDong.id,
+                            dichVuId: dv.id,
+                            ngayGN: {
+                                [db.Sequelize.Op.lte]: ngayGN
+                            }
+                        },
+                        order: [['ngayGN', 'DESC']]
+                    });
+
+                    return {
+                        tenDV: dv.tenDV,
+                        donGia: dv.GiaDichVus?.[0]?.donGia || 0,
                         dichVuId: dv.id,
-                        ngayGN: {
-                            [db.Sequelize.Op.lte]: ngayGN
-                        }
-                    },
-                    order: [['ngayGN', 'DESC']]
-                });
+                        csTrcGanNhat: lastSD?.csTrc || 0,
+                        csSauGanNhat: lastSD?.csSau || 0
+                    };
+                })
+            );
 
-                return {
-                    tenDV: dv.tenDV,
-                    donGia: dv.GiaDichVus?.[0]?.donGia || 0,
-                    dichVuId: dv.id,
-                    csTrcGanNhat: lastSD?.csTrc || 0,
-                    csSauGanNhat: lastSD?.csSau || 0
-                };
-            })
-        );
+            const hoaDonGanNhat = hopDong.HoaDons?.[0] || null;
 
-        const hoaDonGanNhat = hopDong.HoaDons?.[0] || null;
-
-        const data = {
-            hoTen: sinhVien.hoTen,
-            ngayGN,
-            giaThue: hopDong.giaThueTrongHD,
-            DichVus: dsDichVu,
-            hoaDonGanNhat
-        };
+            return {
+                hopDongId: hopDong.id,
+                tenPhong: hopDong.Phong?.tenPhong || 'Không rõ',
+                ngayGN,
+                giaThue: hopDong.giaThueTrongHD,
+                DichVus: dsDichVu,
+                hoaDonGanNhat
+            };
+        }));
 
         return {
             EC: 0,
-            EM: 'Lấy giấy báo thành công!',
-            DT: data
+            EM: 'Lấy giấy báo thành công! (Get data successfully)',
+            DT: {
+                hoTen: sinhVien.hoTen,
+                danhSachGiayBao: result
+            }
         };
-
     } catch (e) {
         console.log(e);
         return {
