@@ -59,6 +59,7 @@ const { getHousesByEmail,
         updateRoomAssets} = require('../controllers/manageController');
 const { checkUserJWT, checkUserPermission } = require('../middleware/JWTAction');
 const { paymentReadFunc, paymentCreateOrderFunc, paymentCallbackFunc, getInvoiceByEmail, getDetailInvoice, getBookingByEmail, deleteBooking } = require('../controllers/paymentController');
+const { contractReadByIdFunc, contractUpdateFunc } = require('../controllers/contractController');
 const router = express.Router();
 
 router.get('/home/get-house', homeGetHouse);
@@ -126,6 +127,8 @@ router.post('/manage/student/create', mngStudentCreateFunc);
 router.delete('/manage/student/delete', mngStudentDeleteFunc);
 
 router.get('/manage/contract/read', contractReadFunc);
+router.get('/manage/contract/:id', contractReadByIdFunc);
+router.put('/manage/contract/update/:id', contractUpdateFunc);
 
 router.post('/manage/service/create', serviceCreateFunc);
 router.get('/manage/service/read', serviceReadFunc);
