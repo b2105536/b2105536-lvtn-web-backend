@@ -1385,6 +1385,65 @@ const luuTaiSanCuaPhong = async (roomId, assets) => {
     }
 }
 
+const layLichSuThuePhong = async (phongId) => {
+    try {
+        if (!phongId) {
+            return {
+                EM: 'Thiếu phongId (Missing phongId)',
+                EC: 1,
+                DT: []
+            };
+        }
+
+        const phong = await db.Phong.findOne({
+            where: { id: phongId },
+            attributes: ['id', 'tenPhong'],
+            include: [
+                {
+                    model: db.HopDong,
+                    required: false,
+                    include: [
+                        {
+                            model: db.NguoiDung,
+                            attributes: ['hoTen']
+                        }
+                    ],
+                    order: [['ngayBD', 'DESC']]
+                }
+            ]
+        });
+
+        if (!phong) {
+            return {
+                EM: 'Không tìm thấy phòng (Room not found)',
+                EC: 2,
+                DT: []
+            };
+        }
+
+        const lichSu = phong.HopDongs?.map(hd => ({
+            hopDongId: hd.id,
+            ngayBD: hd.ngayBD,
+            ngayKT: hd.ngayKT,
+            ttHopDongId: hd.ttHopDongId,
+            sinhVien: hd.NguoiDung
+        })) || [];
+
+        return {
+            EM: 'Lấy lịch sử thuê phòng thành công! (Fetched successfully)',
+            EC: 0,
+            DT: lichSu
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
 // Nhà:
 const capNhatTenVaMoTaNha = async (data) => {
     try {
@@ -1790,5 +1849,6 @@ module.exports = {
     xoaTaiSanBangId,
     capNhatTaiSan,
     layTaiSanCuaPhong,
-    luuTaiSanCuaPhong
+    luuTaiSanCuaPhong,
+    layLichSuThuePhong
 }

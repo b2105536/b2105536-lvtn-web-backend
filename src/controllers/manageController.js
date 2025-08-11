@@ -510,6 +510,26 @@ const updateRoomAssets = async (req, res) => {
     }
 }
 
+const getRoomHistory = async (req, res) => {
+    try {
+        const { phongId } = req.query;
+
+        let data = await manageApiService.layLichSuThuePhong(phongId);
+        return res.status(200).json({
+            EM: data.EM,
+            EC: data.EC,
+            DT: data.DT
+        });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            EM: 'error from server',
+            EC: '-1',
+            DT: ''
+        });
+    }
+}
+
 // Nhà:
 const updateHouseNameDescription = async (req, res) => {
     try {
@@ -721,5 +741,6 @@ module.exports = {
     assetDeleteFunc,
     assetUpdateFunc,
     getAssetOfRoom,
-    updateRoomAssets
+    updateRoomAssets,
+    getRoomHistory
 }

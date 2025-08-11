@@ -56,7 +56,8 @@ const { getHousesByEmail,
         assetDeleteFunc,
         assetUpdateFunc,
         getAssetOfRoom,
-        updateRoomAssets} = require('../controllers/manageController');
+        updateRoomAssets,
+        getRoomHistory} = require('../controllers/manageController');
 const { checkUserJWT, checkUserPermission } = require('../middleware/JWTAction');
 const { paymentReadFunc, paymentCreateOrderFunc, paymentCallbackFunc, getInvoiceByEmail, getDetailInvoice, getBookingByEmail, deleteBooking } = require('../controllers/paymentController');
 const { contractReadByIdFunc, contractUpdateFunc, contractExtendFunc } = require('../controllers/contractController');
@@ -151,6 +152,7 @@ router.put('/manage/room/update', updateRoomNamePrice);
 router.get('/manage/room/student-info', getStudentInfo);
 router.get('/manage/room/room-asset/:phongId', getAssetOfRoom);
 router.post('/manage/room/update-room-asset/:phongId', updateRoomAssets);
+router.get('/manage/room/history', getRoomHistory);
 
 router.put('/manage/house/update', updateHouseNameDescription);
 router.get('/manage/house/images/:houseId', getImagesByHouse);
