@@ -60,8 +60,29 @@ const contractExtendFunc = async (req, res) => {
     }
 }
 
+const contractReadByEmailFunc = async (req, res) => {
+    try {
+        let email = req.query.email;
+        let data = await contractService.layTatCaHopDongTheoEmail(email);
+
+        return res.status(200).json({
+            EM: data.EM,
+            EC: data.EC,
+            DT: data.DT
+        });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            EM: 'error from server',
+            EC: '-1',
+            DT: ''
+        });
+    }
+}
+
 module.exports = {
     contractReadByIdFunc,
     contractUpdateFunc,
-    contractExtendFunc
+    contractExtendFunc, 
+    contractReadByEmailFunc
 }

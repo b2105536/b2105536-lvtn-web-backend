@@ -60,7 +60,7 @@ const { getHousesByEmail,
         getRoomHistory} = require('../controllers/manageController');
 const { checkUserJWT, checkUserPermission } = require('../middleware/JWTAction');
 const { paymentReadFunc, paymentCreateOrderFunc, paymentCallbackFunc, getInvoiceByEmail, getDetailInvoice, getBookingByEmail, deleteBooking } = require('../controllers/paymentController');
-const { contractReadByIdFunc, contractUpdateFunc, contractExtendFunc } = require('../controllers/contractController');
+const { contractReadByIdFunc, contractUpdateFunc, contractExtendFunc, contractReadByEmailFunc } = require('../controllers/contractController');
 const router = express.Router();
 
 router.get('/home/get-house', homeGetHouse);
@@ -173,6 +173,7 @@ router.get('/invoice/read', getInvoiceByEmail);
 router.get('/invoice/:id', getDetailInvoice);
 router.get('/bookings', getBookingByEmail);
 router.post('/booking/delete', deleteBooking);
+router.get('/contracts', contractReadByEmailFunc);
 
 router.get('/home/house/booking/:id', homeGetBookingInfo);
 router.post('/home/booking', homeBooking);

@@ -154,8 +154,55 @@ const giaHanHopDong = async (id, { soThangGiaHan }) => {
     }
 }
 
+const layTatCaHopDongTheoEmail = async (email) => {
+    try {
+        let data = await db.HopDong.findAll({
+            include: [
+                {
+                    model: db.NguoiDung,
+                    attributes: ["id", "hoTen"],
+                    where: { email: email }
+                },
+                {
+                    model: db.Phong,
+                    attributes: ["id", "tenPhong"],
+                    include: [
+                        {
+                            model: db.Nha,
+                            attributes: ["ten"]
+                        }
+                    ]
+                }
+            ],
+            order: [["ngayLap", "DESC"]]
+        });
+
+        if (!data || data.length === 0) {
+            return {
+                EM: 'Không tìm thấy hợp đồng nào! (Contract not found)',
+                EC: 1,
+                DT: []
+            };
+        }
+
+        return {
+            EM: 'Lấy danh sách hợp đồng thành công! (Fetch data successfully)',
+            EC: 0,
+            DT: data
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: []
+        };
+    }
+}
+
 module.exports = {
     layHopDongTheoId,
     capNhatHopDong,
-    giaHanHopDong
+    giaHanHopDong,
+    layTatCaHopDongTheoEmail
 }
