@@ -101,7 +101,61 @@ const capNhatHopDong = async (id, { ngayKT, tienDatCoc }) => {
     }
 }
 
+const giaHanHopDong = async (id, { soThangGiaHan }) => {
+    try {
+        let hopDong = await db.HopDong.findOne({ where: { id } });
+        if (!hopDong) {
+            return {
+                EM: 'Không tìm thấy hợp đồng để gia hạn! (Contract not found)',
+                EC: 1,
+                DT: null
+            };
+        }
+
+        if (!soThangGiaHan || Number(soThangGiaHan) <= 0) {
+            return {
+                EM: 'Số tháng gia hạn không hợp lệ! (Invalid extension months)',
+                EC: 1,
+                DT: null
+            };
+        }
+
+        let ngayKT = new Date(hopDong.ngayKT);
+        let ngayHienTai = new Date();
+        let chenhLechThang =
+            (ngayKT.getFullYear() - ngayHienTai.getFullYear()) * 12 +
+            (ngayKT.getMonth() - ngayHienTai.getMonth());
+
+        if (chenhLechThang > 1 || (chenhLechThang === 1 && ngayKT.getDate() > ngayHienTai.getDate())) {
+            return {
+                EM: 'Hợp đồng còn thời hạn trên 1 tháng, chưa thể gia hạn!',
+                EC: 1,
+                DT: null
+            };
+        }
+
+        ngayKT.setMonth(ngayKT.getMonth() + Number(soThangGiaHan));
+
+        hopDong.ngayKT = ngayKT;
+        await hopDong.save();
+
+        return {
+            EM: 'Gia hạn hợp đồng thành công! (Contract extended successfully)',
+            EC: 0,
+            DT: hopDong
+        };
+    } catch (e) {
+        console.log(e);
+        return {
+            EM: 'Có gì đó không đúng! (Something went wrong in service)',
+            EC: 1,
+            DT: null
+        };
+    }
+}
+
 module.exports = {
     layHopDongTheoId,
-    capNhatHopDong
+    capNhatHopDong,
+    giaHanHopDong
 }

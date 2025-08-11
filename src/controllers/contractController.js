@@ -39,7 +39,29 @@ const contractUpdateFunc = async (req, res) => {
     }
 }
 
+const contractExtendFunc = async (req, res) => {
+    try {
+        let id = req.params.id;
+        let { soThangGiaHan } = req.body;
+
+        let data = await contractService.giaHanHopDong(id, { soThangGiaHan });
+        return res.status(200).json({
+            EM: data.EM,
+            EC: data.EC,
+            DT: data.DT
+        });
+    } catch (e) {
+        console.log(e);
+        return res.status(500).json({
+            EM: 'error from server',
+            EC: '-1',
+            DT: ''
+        });
+    }
+}
+
 module.exports = {
     contractReadByIdFunc,
-    contractUpdateFunc
+    contractUpdateFunc,
+    contractExtendFunc
 }
