@@ -90,9 +90,28 @@ const xoaQuyenBangId = async (id) => {
         let quyen = await db.Quyen.findOne({
             where: {id: id}
         });
-        if (quyen) {
-            await quyen.destroy();
+
+        if (!quyen) {
+            return {
+                EM: 'Quyền không tồn tại. (Role does not exist)',
+                EC: 2,
+                DT: []
+            };
         }
+
+        const quyenDangGan = await db.NhomQuyen.findOne({
+            where: { quyenId: id }
+        });
+
+        if (quyenDangGan) {
+            return {
+                EM: 'Quyền đang được gán cho nhóm, không thể xóa. (Role is assigned to a group, cannot be deleted)',
+                EC: 3,
+                DT: []
+            };
+        }
+
+        await quyen.destroy();
         return {
             EM: 'Xóa quyền thành công! (Role deleted successfully)',
             EC: 0,

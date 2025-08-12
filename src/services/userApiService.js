@@ -1,5 +1,6 @@
 const db = require('../models/index');
 const { sdtTonTaiKhong, emailTonTaiKhong, bamMatKhau, kiemTraMatKhau } = require('./loginRegisterService');
+const { Op } = require('sequelize');
 
 const layTatCaNguoiDung = async () => {
     try {
@@ -158,21 +159,50 @@ const xoaNguoiDungBangId = async (userId) => {
             where: {id: userId}
         });
 
-        if (nguoiDung) {
-            await nguoiDung.destroy();
-
+        if (!nguoiDung) {
             return {
-                EM: 'Xóa người dùng thành công! (User deleted successfully)',
-                EC: 0,
-                DT: []
-            };
-        } else {
-            return {
-                EM: 'Người dùng không tồn tại. (User does not exited)',
+                EM: 'Người dùng không tồn tại. (User does not exist)',
                 EC: 2,
                 DT: []
             };
         }
+
+        const coNhaSoHuu = await db.Nha.findOne({
+            where: { chuTroId: userId }
+        });
+
+        if (coNhaSoHuu) {
+            return {
+                EM: 'Người dùng đang sở hữu nhà, không thể xóa. (Landlord cannot be deleted)',
+                EC: 3,
+                DT: []
+            };
+        }
+
+        const coHopDong = await db.HopDong.findOne({
+            where: {
+                [Op.or]: [
+                    { chuTroId: userId },
+                    { sinhVienId: userId }
+                ]
+            }
+        });
+
+        if (coHopDong) {
+            return {
+                EM: 'Người dùng đang có hợp đồng, không thể xóa. (User cannot be deleted)',
+                EC: 4,
+                DT: []
+            };
+        }
+
+        await nguoiDung.destroy();
+
+        return {
+            EM: 'Xóa người dùng thành công! (User deleted successfully)',
+            EC: 0,
+            DT: []
+        };
     } catch (e) {
         console.log(e);
         return {
