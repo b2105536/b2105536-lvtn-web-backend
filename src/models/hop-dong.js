@@ -45,7 +45,8 @@ module.exports = (sequelize, DataTypes) => {
     ngayBD: DataTypes.DATE,
     ngayKT: DataTypes.DATE,
     giaThueTrongHD: DataTypes.STRING,
-    ttHopDongId: DataTypes.STRING
+    ttHopDongId: DataTypes.STRING,
+    tienDatCoc: DataTypes.STRING
   }, {
     sequelize,
     modelName: 'HopDong',

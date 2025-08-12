@@ -62,6 +62,7 @@ const { checkUserJWT, checkUserPermission } = require('../middleware/JWTAction')
 const { paymentReadFunc, paymentCreateOrderFunc, paymentCallbackFunc, getInvoiceByEmail, getDetailInvoice, getBookingByEmail, deleteBooking } = require('../controllers/paymentController');
 const { contractReadByIdFunc, contractUpdateFunc, contractExtendFunc, contractReadByEmailFunc } = require('../controllers/contractController');
 const { addToBlacklist, removeFromBlacklist } = require('../controllers/blacklistController');
+const { getCashflowByHouse, updateDeposit, payDebt } = require('../controllers/cashflowController');
 const router = express.Router();
 
 router.get('/home/get-house', homeGetHouse);
@@ -168,6 +169,10 @@ router.put('/manage/asset/update', assetUpdateFunc);
 
 router.post('/manage/blacklist/add', addToBlacklist);
 router.delete('/manage/blacklist/remove/:sinhVienId', removeFromBlacklist);
+
+router.get('/manage/cashflow', getCashflowByHouse);
+router.put('/manage/cashflow/update-deposit', updateDeposit);
+router.put('/manage/cashflow/pay-debt', payDebt);
 
 // Other routes
 router.get('/payment/info-by-email', paymentReadFunc);
