@@ -130,6 +130,17 @@ const taoHoacThemHopDongKhach = async (data) => {
             };
         }
 
+        const blacklist = await db.Blacklist.findOne({
+            where: { sinhVienId: nguoiDung.id }
+        });
+        if (blacklist) {
+            return {
+                EM: `Sinh viên này đang trong danh sách chặn với lý do: ${blacklist.lyDo}. Hãy cân nhắc! (Please consider)`,
+                EC: 1,
+                DT: null
+            };
+        }
+
         const hopDongDangHoatDong = await db.HopDong.findOne({
             where: {
                 phongId: data.phongId,
