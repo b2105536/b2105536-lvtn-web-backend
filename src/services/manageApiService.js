@@ -1280,7 +1280,13 @@ const layThongTinSinhVien = async (phongId) => {
                     include: [
                         {
                             model: db.NguoiDung,
-                            attributes: ['id', 'hoTen', 'soDienThoai', 'email', 'soDD', 'gioiTinh', 'ngaySinh', 'dcThuongTru']
+                            attributes: ['id', 'hoTen', 'soDienThoai', 'email', 'soDD', 'gioiTinh', 'ngaySinh', 'dcThuongTru'],
+                            include: [
+                                {
+                                    model: db.Blacklist,
+                                    attributes: ['id', 'ngayChan', 'lyDo']
+                                }
+                            ]
                         }
                     ]
                 }
